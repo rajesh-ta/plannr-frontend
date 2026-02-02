@@ -1,8 +1,12 @@
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import WorkItemsHeader from "@/components/board/WorkItemsHeader";
+import WorkItemsGrid from "@/components/board/WorkItemsGrid";
+
 export default function Home() {
   return (
-    <main className="p-6">
-      <h1>Welcome to the Home Page</h1>
-      <p>This is the main landing page of the application.</p>
-    </main>
+    <DashboardLayout>
+      <WorkItemsHeader />
+      <WorkItemsGrid />
+    </DashboardLayout>
   );
 }
