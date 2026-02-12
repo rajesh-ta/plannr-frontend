@@ -12,6 +12,9 @@ import {
   Box,
   Typography,
   Divider,
+  Select,
+  MenuItem,
+  FormControl,
 } from "@mui/material";
 import {
   Dashboard,
@@ -21,12 +24,14 @@ import {
   DirectionsRun,
   Description,
   Assignment,
+  GridView,
 } from "@mui/icons-material";
 
 const drawerWidth = 260;
 
 export default function Sidebar() {
   const [boardsOpen, setBoardsOpen] = useState(true);
+  const [selectedProject, setSelectedProject] = useState("plannr");
 
   const handleBoardsClick = () => {
     setBoardsOpen(!boardsOpen);
@@ -48,19 +53,47 @@ export default function Sidebar() {
       }}
     >
       <Box sx={{ overflow: "auto" }}>
-        {/* Project Name */}
+        {/* Project Selector */}
         <Box sx={{ p: 2, pb: 1 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              fontWeight: 600,
-              color: "#323130",
-              fontSize: "13px",
-              mb: 0.5,
-            }}
-          >
-            Plannr
-          </Typography>
+          <FormControl fullWidth size="small">
+            <Select
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              sx={{
+                fontSize: "13px",
+                fontWeight: 600,
+                bgcolor: "white",
+                "& .MuiSelect-select": {
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  py: 0.75,
+                },
+                "& fieldset": {
+                  borderColor: "#EDEBE9",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#C8C6C4",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#0078D4",
+                },
+              }}
+              renderValue={(value) => (
+                <span>
+                  {value === "plannr"
+                    ? "Plannr"
+                    : value === "eiap"
+                      ? "EIAP_Projects"
+                      : "Demo Project"}
+                </span>
+              )}
+            >
+              <MenuItem value="plannr">Plannr</MenuItem>
+              <MenuItem value="eiap">EIAP_Projects</MenuItem>
+              <MenuItem value="demo">Demo Project</MenuItem>
+            </Select>
+          </FormControl>
         </Box>
 
         <Divider sx={{ my: 1 }} />
