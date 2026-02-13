@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Drawer,
   List,
@@ -31,6 +32,8 @@ import { projectsApi, Project } from "@/services/api/projects";
 const drawerWidth = 260;
 
 export default function Sidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [boardsOpen, setBoardsOpen] = useState(true);
   const [selectedProject, setSelectedProject] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -129,10 +132,12 @@ export default function Sidebar() {
           {/* Overview */}
           <ListItem disablePadding>
             <ListItemButton
+              onClick={() => router.push("/overview")}
               sx={{
                 py: 1,
                 px: 2,
                 "&:hover": { bgcolor: "#EDEBE9" },
+                bgcolor: pathname === "/overview" ? "#E1DFDD" : "transparent",
               }}
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
@@ -142,7 +147,7 @@ export default function Sidebar() {
                 primary="Overview"
                 primaryTypographyProps={{
                   fontSize: "13px",
-                  fontWeight: 500,
+                  fontWeight: pathname === "/overview" ? 600 : 500,
                 }}
               />
             </ListItemButton>
@@ -182,11 +187,13 @@ export default function Sidebar() {
               {/* Sprint */}
               <ListItem disablePadding>
                 <ListItemButton
+                  onClick={() => router.push("/sprint")}
                   sx={{
                     py: 0.75,
                     pl: 6,
                     pr: 2,
                     "&:hover": { bgcolor: "#EDEBE9" },
+                    bgcolor: pathname === "/sprint" ? "#E1DFDD" : "transparent",
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 32 }}>
@@ -196,52 +203,7 @@ export default function Sidebar() {
                     primary="Sprint"
                     primaryTypographyProps={{
                       fontSize: "13px",
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-
-              {/* User Story */}
-              <ListItem disablePadding>
-                <ListItemButton
-                  sx={{
-                    py: 0.75,
-                    pl: 6,
-                    pr: 2,
-                    "&:hover": { bgcolor: "#EDEBE9" },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <Description sx={{ fontSize: 16, color: "#605E5C" }} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="User Story"
-                    primaryTypographyProps={{
-                      fontSize: "13px",
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-
-              {/* Task */}
-              <ListItem disablePadding>
-                <ListItemButton
-                  sx={{
-                    py: 0.75,
-                    pl: 6,
-                    pr: 2,
-                    "&:hover": { bgcolor: "#EDEBE9" },
-                    bgcolor: "#E1DFDD",
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <Assignment sx={{ fontSize: 16, color: "#605E5C" }} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="Task"
-                    primaryTypographyProps={{
-                      fontSize: "13px",
-                      fontWeight: 600,
+                      fontWeight: pathname === "/sprint" ? 600 : 400,
                     }}
                   />
                 </ListItemButton>

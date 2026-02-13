@@ -1,12 +1,5 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import WorkItemsHeader from "@/components/board/WorkItemsHeader";
-import WorkItemsGrid from "@/components/board/WorkItemsGrid";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <DashboardLayout>
-      <WorkItemsHeader />
-      <WorkItemsGrid />
-    </DashboardLayout>
-  );
+  redirect("/overview");
 }
