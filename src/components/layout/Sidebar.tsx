@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Drawer,
   List,
@@ -26,12 +26,34 @@ import {
   Assignment,
   GridView,
 } from "@mui/icons-material";
+import { projectsApi, Project } from "@/services/api/projects";
 
 const drawerWidth = 260;
 
 export default function Sidebar() {
   const [boardsOpen, setBoardsOpen] = useState(true);
-  const [selectedProject, setSelectedProject] = useState("plannr");
+  const [selectedProject, setSelectedProject] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const data = await projectsApi.getAll();
+        setProjects(data);
+        if (data.length > 0 && !selectedProject) {
+          setSelectedProject(data[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   const handleBoardsClick = () => {
     setBoardsOpen(!boardsOpen);
@@ -59,6 +81,7 @@ export default function Sidebar() {
             <Select
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
+              disabled={loading || projects.length === 0}
               sx={{
                 fontSize: "13px",
                 fontWeight: 600,
@@ -79,19 +102,22 @@ export default function Sidebar() {
                   borderColor: "#0078D4",
                 },
               }}
-              renderValue={(value) => (
-                <span>
-                  {value === "plannr"
-                    ? "Plannr"
-                    : value === "eiap"
-                      ? "EIAP_Projects"
-                      : "Demo Project"}
-                </span>
-              )}
+              renderValue={(value) => {
+                const project = projects.find((p) => p.id === value);
+                return <span>{project?.name || "Select a project"}</span>;
+              }}
             >
-              <MenuItem value="plannr">Plannr</MenuItem>
-              <MenuItem value="eiap">EIAP_Projects</MenuItem>
-              <MenuItem value="demo">Demo Project</MenuItem>
+              {loading ? (
+                <MenuItem disabled>Loading projects...</MenuItem>
+              ) : projects.length === 0 ? (
+                <MenuItem disabled>No projects available</MenuItem>
+              ) : (
+                projects.map((project) => (
+                  <MenuItem key={project.id} value={project.id}>
+                    {project.name}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
         </Box>
