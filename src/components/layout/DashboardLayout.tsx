@@ -3,6 +3,7 @@
 import { Box } from "@mui/material";
 import AppHeader from "./AppHeader";
 import Sidebar from "./Sidebar";
+import { ProjectProvider } from "@/contexts/ProjectContext";
 
 export default function DashboardLayout({
   children,
@@ -10,20 +11,20 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <AppHeader />
-      <Sidebar />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          // ml: "260px",
-          mt: "48px",
-          // width: "calc(100% - 260px)",
-        }}
-      >
-        {children}
+    <ProjectProvider>
+      <Box sx={{ display: "flex", minHeight: "100vh" }}>
+        <AppHeader />
+        <Sidebar />
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            mt: "48px",
+          }}
+        >
+          {children}
+        </Box>
       </Box>
-    </Box>
+    </ProjectProvider>
   );
 }

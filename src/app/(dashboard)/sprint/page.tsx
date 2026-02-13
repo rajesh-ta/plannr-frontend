@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   FormControl,
@@ -27,6 +27,8 @@ import {
   Add,
   ViewWeek,
 } from "@mui/icons-material";
+import { useProject } from "@/contexts/ProjectContext";
+import { sprintsApi, Sprint } from "@/services/api/sprints";
 
 interface Task {
   id: string;
@@ -44,13 +46,6 @@ interface UserStory {
   title: string;
   tasks: Task[];
 }
-
-// Mock data - replace with API calls later
-const mockSprints = [
-  { id: "1", name: "2020 TIPS Retirement" },
-  { id: "2", name: "Sprint 2" },
-  { id: "3", name: "Sprint 3" },
-];
 
 const mockUserStories: UserStory[] = [
   {
@@ -101,11 +96,35 @@ const mockUserStories: UserStory[] = [
 ];
 
 export default function SprintPage() {
-  const [selectedSprint, setSelectedSprint] = useState("1");
+  const { selectedProjectId } = useProject();
+  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [loadingSprints, setLoadingSprints] = useState(false);
+  const [selectedSprint, setSelectedSprint] = useState("");
   const [expandedStories, setExpandedStories] = useState<{
     [key: string]: boolean;
   }>({ "story-1": true });
   const [allCollapsed, setAllCollapsed] = useState(false);
+
+  useEffect(() => {
+    const fetchSprints = async () => {
+      if (!selectedProjectId) return;
+
+      try {
+        setLoadingSprints(true);
+        const data = await sprintsApi.getByProjectId(selectedProjectId);
+        setSprints(data);
+        if (data.length > 0 && !selectedSprint) {
+          setSelectedSprint(data[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch sprints:", error);
+      } finally {
+        setLoadingSprints(false);
+      }
+    };
+
+    fetchSprints();
+  }, [selectedProjectId]);
 
   const handleCollapseAll = () => {
     if (allCollapsed) {
@@ -172,6 +191,7 @@ export default function SprintPage() {
               <Select
                 value={selectedSprint}
                 onChange={(e) => setSelectedSprint(e.target.value)}
+                disabled={loadingSprints || sprints.length === 0}
                 IconComponent={KeyboardArrowDown}
                 sx={{
                   fontSize: "20px",
@@ -186,11 +206,17 @@ export default function SprintPage() {
                   },
                 }}
               >
-                {mockSprints.map((sprint) => (
-                  <MenuItem key={sprint.id} value={sprint.id}>
-                    {sprint.name}
-                  </MenuItem>
-                ))}
+                {loadingSprints ? (
+                  <MenuItem disabled>Loading sprints...</MenuItem>
+                ) : sprints.length === 0 ? (
+                  <MenuItem disabled>No sprints available</MenuItem>
+                ) : (
+                  sprints.map((sprint) => (
+                    <MenuItem key={sprint.id} value={sprint.id}>
+                      {sprint.name}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
             </FormControl>
             <IconButton size="small">

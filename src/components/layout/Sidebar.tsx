@@ -28,14 +28,15 @@ import {
   GridView,
 } from "@mui/icons-material";
 import { projectsApi, Project } from "@/services/api/projects";
+import { useProject } from "@/contexts/ProjectContext";
 
 const drawerWidth = 260;
 
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { selectedProjectId, setSelectedProjectId } = useProject();
   const [boardsOpen, setBoardsOpen] = useState(true);
-  const [selectedProject, setSelectedProject] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,8 +46,8 @@ export default function Sidebar() {
         setLoading(true);
         const data = await projectsApi.getAll();
         setProjects(data);
-        if (data.length > 0 && !selectedProject) {
-          setSelectedProject(data[0].id);
+        if (data.length > 0 && !selectedProjectId) {
+          setSelectedProjectId(data[0].id);
         }
       } catch (error) {
         console.error("Failed to fetch projects:", error);
@@ -82,8 +83,8 @@ export default function Sidebar() {
         <Box sx={{ p: 2, pb: 1 }}>
           <FormControl fullWidth size="small">
             <Select
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
               disabled={loading || projects.length === 0}
               sx={{
                 fontSize: "13px",
