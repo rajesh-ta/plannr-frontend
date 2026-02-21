@@ -192,18 +192,34 @@ export default function SprintPage() {
   };
 
   const handleSaveTask = async (updatedTask: Partial<Task>) => {
-    // TODO: Implement API call to update task
-    console.log("Saving task:", updatedTask);
-    // After successful update, refresh the tasks for that user story
-    if (selectedTask) {
+    if (!selectedTask) return;
+
+    try {
+      const payload = {
+        user_story_id: updatedTask.user_story_id || selectedTask.user_story_id,
+        title: updatedTask.title,
+        description: updatedTask.description,
+        status: updatedTask.status,
+        estimated_hours: updatedTask.estimated_hours,
+        assignee_id: updatedTask.assignee_id,
+      };
+
+      const updatedTaskData = await tasksApi.update(selectedTask.id, payload);
+
+      // Update local state with the response from API
       const tasks = storyTasks[selectedTask.user_story_id] || [];
       const updatedTasks = tasks.map((t) =>
-        t.id === updatedTask.id ? { ...t, ...updatedTask } : t,
+        t.id === updatedTaskData.id ? updatedTaskData : t,
       );
       setStoryTasks((prev) => ({
         ...prev,
         [selectedTask.user_story_id]: updatedTasks,
       }));
+
+      console.log("Task updated successfully:", updatedTaskData);
+    } catch (error) {
+      console.error("Failed to update task:", error);
+      // You can add a toast notification here for user feedback
     }
   };
 
