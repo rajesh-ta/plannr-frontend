@@ -1,4 +1,4 @@
-import { Box, Typography, Chip } from "@mui/material";
+import { Box, Typography, Chip, Tooltip } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import { Task } from "@/services/api/tasks";
@@ -18,7 +18,25 @@ export default function TaskCard({
   const assignee = useUserById(task.assignee_id);
   const assigneeName = assignee?.name;
 
-  return (
+  const tooltipContent = task.description ? (
+    <Box sx={{ maxWidth: 400 }}>
+      <Typography
+        sx={{
+          fontWeight: 600,
+          mb: 0.5,
+          fontSize: "11px",
+          color: "rgba(255, 255, 255, 0.7)",
+        }}
+      >
+        Description
+      </Typography>
+      <Typography sx={{ fontSize: "12px", whiteSpace: "pre-wrap" }}>
+        {task.description}
+      </Typography>
+    </Box>
+  ) : null;
+
+  const cardContent = (
     <Box
       onClick={onClick}
       sx={{
@@ -129,5 +147,19 @@ export default function TaskCard({
         </Box>
       )}
     </Box>
+  );
+
+  return tooltipContent ? (
+    <Tooltip
+      title={tooltipContent}
+      arrow
+      placement="top"
+      enterDelay={500}
+      leaveDelay={200}
+    >
+      {cardContent}
+    </Tooltip>
+  ) : (
+    cardContent
   );
 }

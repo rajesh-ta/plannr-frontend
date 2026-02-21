@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { Close, Assignment } from "@mui/icons-material";
 import { Task } from "@/services/api/tasks";
+import { useUsers } from "@/hooks/useUsers";
 
 interface TaskDetailsDialogProps {
   open: boolean;
@@ -35,9 +36,15 @@ export default function TaskDetailsDialog({
   userStoryId,
   onSave,
 }: TaskDetailsDialogProps) {
+  const { data: users = [] } = useUsers();
   const [title, setTitle] = useState(task?.title || "");
   const [description, setDescription] = useState(task?.description || "");
   const [status, setStatus] = useState(task?.status || "new");
+  const [assigneeId, setAssigneeId] = useState(task?.assignee_id || "");
+  const [estimatedHours, setEstimatedHours] = useState(
+    task?.estimated_hours || 0,
+  );
+  const [errors, setErrors] = useState({ title: false, description: false });
 
   // Sync state when dialog opens with a task
   useEffect(() => {
@@ -45,17 +52,33 @@ export default function TaskDetailsDialog({
       setTitle(task.title);
       setDescription(task.description || "");
       setStatus(task.status);
+      setAssigneeId(task.assignee_id || "");
+      setEstimatedHours(task.estimated_hours || 0);
+      setErrors({ title: false, description: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, task?.id]);
 
   const handleSave = () => {
+    // Validate required fields
+    const newErrors = {
+      title: !title.trim(),
+      description: !description.trim(),
+    };
+    setErrors(newErrors);
+
+    if (newErrors.title || newErrors.description) {
+      return;
+    }
+
     if (onSave && task) {
       onSave({
         id: task.id,
         title,
         description,
         status,
+        assignee_id: assigneeId || undefined,
+        estimated_hours: estimatedHours,
       });
     }
     onClose();
@@ -134,19 +157,25 @@ export default function TaskDetailsDialog({
           <TextField
             label="Title"
             fullWidth
+            required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             size="small"
+            error={errors.title}
+            helperText={errors.title ? "Title is required" : ""}
           />
 
           <TextField
             label="Description"
             fullWidth
+            required
             multiline
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             size="small"
+            error={errors.description}
+            helperText={errors.description ? "Description is required" : ""}
           />
 
           <FormControl fullWidth size="small">
@@ -163,6 +192,36 @@ export default function TaskDetailsDialog({
               ))}
             </Select>
           </FormControl>
+
+          <FormControl fullWidth size="small">
+            <InputLabel>Assign To</InputLabel>
+            <Select
+              value={assigneeId}
+              label="Assign To"
+              onChange={(e) => setAssigneeId(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>Unassigned</em>
+              </MenuItem>
+              {users.map((user) => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            label="Estimated Hours"
+            fullWidth
+            type="number"
+            value={estimatedHours}
+            onChange={(e) => setEstimatedHours(Number(e.target.value) || 0)}
+            size="small"
+            InputProps={{
+              inputProps: { min: 0, max: 1000, step: 0.5 },
+            }}
+          />
         </Box>
       </DialogContent>
 
