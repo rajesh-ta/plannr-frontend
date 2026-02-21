@@ -12,7 +12,6 @@ import {
   Divider,
   Chip,
   Button,
-  Avatar,
 } from "@mui/material";
 import {
   KeyboardArrowDown,
@@ -27,6 +26,8 @@ import { useProject } from "@/contexts/ProjectContext";
 import { sprintsApi, Sprint } from "@/services/api/sprints";
 import { userStoriesApi, UserStory } from "@/services/api/userStories";
 import { tasksApi, Task } from "@/services/api/tasks";
+import TaskCard from "@/components/sprint/TaskCard";
+import TaskDetailsDialog from "@/components/sprint/TaskDetailsDialog";
 
 export default function SprintPage() {
   const { selectedProjectId } = useProject();
@@ -45,6 +46,8 @@ export default function SprintPage() {
   const [loadingTasks, setLoadingTasks] = useState<{
     [key: string]: boolean;
   }>({});
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     const fetchSprints = async () => {
@@ -173,13 +176,35 @@ export default function SprintPage() {
     }
   };
 
-  const getInitials = (name?: string) => {
-    if (!name) return "?";
-    const parts = name.split(" ");
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setDialogOpen(true);
+  };
+
+  const getSelectedUserStory = () => {
+    if (!selectedTask) return null;
+    return userStories.find((story) => story.id === selectedTask.user_story_id);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedTask(null);
+  };
+
+  const handleSaveTask = async (updatedTask: Partial<Task>) => {
+    // TODO: Implement API call to update task
+    console.log("Saving task:", updatedTask);
+    // After successful update, refresh the tasks for that user story
+    if (selectedTask) {
+      const tasks = storyTasks[selectedTask.user_story_id] || [];
+      const updatedTasks = tasks.map((t) =>
+        t.id === updatedTask.id ? { ...t, ...updatedTask } : t,
+      );
+      setStoryTasks((prev) => ({
+        ...prev,
+        [selectedTask.user_story_id]: updatedTasks,
+      }));
     }
-    return name.substring(0, 2).toUpperCase();
   };
 
   const groupTasksByStatus = (tasks: Task[]) => {
@@ -199,104 +224,6 @@ export default function SprintPage() {
 
     return groups;
   };
-
-  const renderTaskCard = (task: Task, borderColor: string) => (
-    <Box
-      key={task.id}
-      sx={{
-        bgcolor: "white",
-        border: "1px solid #EDEBE9",
-        borderLeft: `3px solid ${borderColor}`,
-        borderRadius: "4px",
-        p: 1.5,
-        mb: 1,
-        cursor: "pointer",
-        "&:hover": {
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        },
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 1,
-          mb: 1,
-        }}
-      >
-        <Box
-          sx={{
-            width: 16,
-            height: 16,
-            bgcolor: "#605E5C",
-            borderRadius: "2px",
-            flexShrink: 0,
-          }}
-        />
-        <Typography
-          sx={{
-            fontSize: "12px",
-            color: "#0078D4",
-            fontWeight: 500,
-          }}
-        >
-          {task.id}
-        </Typography>
-      </Box>
-      <Typography
-        sx={{
-          fontSize: "12px",
-          mb: 1,
-          lineHeight: 1.4,
-        }}
-      >
-        {task.title}
-      </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
-        }}
-      >
-        <Chip
-          label={task.status}
-          size="small"
-          sx={{
-            fontSize: "10px",
-            height: 18,
-            bgcolor: "#F3F2F1",
-          }}
-        />
-        {task.assigned_to && (
-          <Avatar
-            sx={{
-              width: 20,
-              height: 20,
-              fontSize: "9px",
-              bgcolor: "#0078D4",
-            }}
-          >
-            {getInitials(task.assigned_to)}
-          </Avatar>
-        )}
-      </Box>
-      {task.tags && task.tags.length > 0 && (
-        <Box sx={{ mt: 1 }}>
-          <Chip
-            label={task.tags[0]}
-            size="small"
-            sx={{
-              fontSize: "10px",
-              height: 18,
-              bgcolor: "#E1DFDD",
-            }}
-          />
-        </Box>
-      )}
-    </Box>
-  );
 
   return (
     <Box
@@ -616,9 +543,14 @@ export default function SprintPage() {
                             Loading...
                           </Typography>
                         ) : (
-                          groupedTasks.new.map((task) =>
-                            renderTaskCard(task, "#797775"),
-                          )
+                          groupedTasks.new.map((task) => (
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              borderColor="#797775"
+                              onClick={() => handleTaskClick(task)}
+                            />
+                          ))
                         )}
                       </Collapse>
                     </Box>
@@ -633,9 +565,14 @@ export default function SprintPage() {
                             Loading...
                           </Typography>
                         ) : (
-                          groupedTasks.active.map((task) =>
-                            renderTaskCard(task, "#0078D4"),
-                          )
+                          groupedTasks.active.map((task) => (
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              borderColor="#0078D4"
+                              onClick={() => handleTaskClick(task)}
+                            />
+                          ))
                         )}
                       </Collapse>
                     </Box>
@@ -650,9 +587,14 @@ export default function SprintPage() {
                             Loading...
                           </Typography>
                         ) : (
-                          groupedTasks.closed.map((task) =>
-                            renderTaskCard(task, "#107C10"),
-                          )
+                          groupedTasks.closed.map((task) => (
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              borderColor="#107C10"
+                              onClick={() => handleTaskClick(task)}
+                            />
+                          ))
                         )}
                       </Collapse>
                     </Box>
@@ -667,9 +609,14 @@ export default function SprintPage() {
                             Loading...
                           </Typography>
                         ) : (
-                          groupedTasks.removed.map((task) =>
-                            renderTaskCard(task, "#A4262C"),
-                          )
+                          groupedTasks.removed.map((task) => (
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              borderColor="#A4262C"
+                              onClick={() => handleTaskClick(task)}
+                            />
+                          ))
                         )}
                       </Collapse>
                     </Box>
@@ -680,6 +627,13 @@ export default function SprintPage() {
           )}
         </Box>
       </Box>
+      <TaskDetailsDialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        task={selectedTask}
+        userStoryId={getSelectedUserStory()?.id}
+        onSave={handleSaveTask}
+      />
     </Box>
   );
 }

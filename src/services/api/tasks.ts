@@ -2,6 +2,7 @@ import { apiClient } from "./client";
 
 export interface Task {
   id: string;
+  task_no: string;
   title: string;
   description?: string;
   user_story_id: string;
