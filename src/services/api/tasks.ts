@@ -50,4 +50,8 @@ export const tasksApi = {
     const response = await apiClient.put<Task>(`/tasks/${taskId}`, payload);
     return response.data;
   },
+
+  delete: async (taskId: string) => {
+    await apiClient.delete(`/tasks/${taskId}`);
+  },
 };

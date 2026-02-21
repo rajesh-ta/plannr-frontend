@@ -1,6 +1,18 @@
-import { Box, Typography, Chip, Tooltip } from "@mui/material";
+import { useState } from "react";
+import {
+  Box,
+  Typography,
+  Chip,
+  Tooltip,
+  IconButton,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { Task } from "@/services/api/tasks";
 import { useUserById } from "@/hooks/useUsers";
 
@@ -8,15 +20,45 @@ interface TaskCardProps {
   task: Task;
   borderColor: string;
   onClick: () => void;
+  onDelete?: (taskId: string) => void;
 }
 
 export default function TaskCard({
   task,
   borderColor,
   onClick,
+  onDelete,
 }: TaskCardProps) {
   const assignee = useUserById(task.assignee_id);
   const assigneeName = assignee?.name;
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(anchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = (event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    setAnchorEl(null);
+  };
+
+  const handleEdit = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onClick();
+    handleMenuClose();
+  };
+
+  const handleDelete = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (onDelete) {
+      onDelete(task.id);
+    }
+    handleMenuClose();
+  };
 
   const tooltipContent = task.description ? (
     <Box sx={{ maxWidth: 400 }}>
@@ -36,7 +78,7 @@ export default function TaskCard({
     </Box>
   ) : null;
 
-  const cardContent = (
+  return (
     <Box
       onClick={onClick}
       sx={{
@@ -47,11 +89,33 @@ export default function TaskCard({
         p: 1.5,
         mb: 1,
         cursor: "pointer",
+        position: "relative",
         "&:hover": {
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         },
+        "&:hover .more-icon": {
+          opacity: 1,
+        },
       }}
     >
+      <IconButton
+        className="more-icon"
+        size="small"
+        onClick={handleMenuClick}
+        sx={{
+          position: "absolute",
+          top: 4,
+          right: 4,
+          opacity: 0,
+          transition: "opacity 0.2s",
+          padding: "4px",
+          "&:hover": {
+            bgcolor: "rgba(0, 0, 0, 0.04)",
+          },
+        }}
+      >
+        <MoreVertIcon sx={{ fontSize: 16 }} />
+      </IconButton>
       <Box
         sx={{
           display: "flex",
@@ -69,15 +133,37 @@ export default function TaskCard({
             flexShrink: 0,
           }}
         />
-        <Typography
-          sx={{
-            fontSize: "12px",
-            color: "#0078D4",
-            fontWeight: 500,
-          }}
-        >
-          {task.task_no}
-        </Typography>
+        {tooltipContent ? (
+          <Tooltip
+            title={tooltipContent}
+            placement="top"
+            arrow
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <Typography
+              sx={{
+                fontSize: "12px",
+                color: "#0078D4",
+                fontWeight: 500,
+                textDecoration: "underline",
+              }}
+            >
+              {task.task_no}
+            </Typography>
+          </Tooltip>
+        ) : (
+          <Typography
+            sx={{
+              fontSize: "12px",
+              color: "#0078D4",
+              fontWeight: 500,
+              textDecoration: "underline",
+            }}
+          >
+            {task.task_no}
+          </Typography>
+        )}
       </Box>
       <Typography
         sx={{
@@ -146,20 +232,50 @@ export default function TaskCard({
           />
         </Box>
       )}
+      <Menu
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={() => handleMenuClose()}
+        onClick={(e) => e.stopPropagation()}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        PaperProps={{
+          sx: {
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            minWidth: 180,
+          },
+        }}
+      >
+        <MenuItem
+          onClick={handleEdit}
+          sx={{
+            fontSize: "13px",
+            py: 1,
+            gap: 1.5,
+          }}
+        >
+          <EditOutlinedIcon sx={{ fontSize: 18 }} />
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={handleDelete}
+          sx={{
+            fontSize: "13px",
+            py: 1,
+            gap: 1.5,
+            color: "#A4262C",
+          }}
+        >
+          <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+          Delete
+        </MenuItem>
+      </Menu>
     </Box>
-  );
-
-  return tooltipContent ? (
-    <Tooltip
-      title={tooltipContent}
-      arrow
-      placement="top"
-      enterDelay={500}
-      leaveDelay={200}
-    >
-      {cardContent}
-    </Tooltip>
-  ) : (
-    cardContent
   );
 }

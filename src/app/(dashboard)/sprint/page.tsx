@@ -271,6 +271,37 @@ export default function SprintPage() {
     }
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      // Find the task to get its user_story_id
+      let userStoryId = "";
+      for (const [storyId, tasks] of Object.entries(storyTasks)) {
+        if (tasks.some((t) => t.id === taskId)) {
+          userStoryId = storyId;
+          break;
+        }
+      }
+
+      if (!userStoryId) return;
+
+      // Delete task via API
+      await tasksApi.delete(taskId);
+
+      // Remove task from local state
+      const tasks = storyTasks[userStoryId] || [];
+      const updatedTasks = tasks.filter((t) => t.id !== taskId);
+      setStoryTasks((prev) => ({
+        ...prev,
+        [userStoryId]: updatedTasks,
+      }));
+
+      console.log("Task deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      // You can add a toast notification here for user feedback
+    }
+  };
+
   const groupTasksByStatus = (tasks: Task[]) => {
     const groups: { [key: string]: Task[] } = {
       new: [],
@@ -617,6 +648,7 @@ export default function SprintPage() {
                               task={task}
                               borderColor="#797775"
                               onClick={() => handleTaskClick(task)}
+                              onDelete={handleDeleteTask}
                             />
                           ))
                         )}
@@ -639,6 +671,7 @@ export default function SprintPage() {
                               task={task}
                               borderColor="#0078D4"
                               onClick={() => handleTaskClick(task)}
+                              onDelete={handleDeleteTask}
                             />
                           ))
                         )}
@@ -661,6 +694,7 @@ export default function SprintPage() {
                               task={task}
                               borderColor="#107C10"
                               onClick={() => handleTaskClick(task)}
+                              onDelete={handleDeleteTask}
                             />
                           ))
                         )}
@@ -683,6 +717,7 @@ export default function SprintPage() {
                               task={task}
                               borderColor="#A4262C"
                               onClick={() => handleTaskClick(task)}
+                              onDelete={handleDeleteTask}
                             />
                           ))
                         )}
