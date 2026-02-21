@@ -24,11 +24,25 @@ export interface TaskUpdatePayload {
   assignee_id?: string;
 }
 
+export interface TaskCreatePayload {
+  user_story_id: string;
+  title: string;
+  description: string;
+  status: string;
+  estimated_hours?: number;
+  assignee_id?: string;
+}
+
 export const tasksApi = {
   getByUserStoryId: async (userStoryId: string) => {
     const response = await apiClient.get<Task[]>(
       `/tasks/user-story/${userStoryId}`,
     );
+    return response.data;
+  },
+
+  create: async (payload: TaskCreatePayload) => {
+    const response = await apiClient.post<Task>(`/tasks/`, payload);
     return response.data;
   },
 

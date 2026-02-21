@@ -49,6 +49,9 @@ export default function SprintPage() {
   }>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [addingTaskForStory, setAddingTaskForStory] = useState<string | null>(
+    null,
+  );
 
   // Fetch users using React Query
   useUsers();
@@ -186,6 +189,11 @@ export default function SprintPage() {
   };
 
   const getSelectedUserStory = () => {
+    // If adding a new task, return the story we're adding to
+    if (addingTaskForStory) {
+      return userStories.find((story) => story.id === addingTaskForStory);
+    }
+    // Otherwise, find the story of the selected task
     if (!selectedTask) return null;
     return userStories.find((story) => story.id === selectedTask.user_story_id);
   };
@@ -193,36 +201,72 @@ export default function SprintPage() {
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setSelectedTask(null);
+    setAddingTaskForStory(null);
   };
 
-  const handleSaveTask = async (updatedTask: Partial<Task>) => {
-    if (!selectedTask) return;
+  const handleAddTask = (userStoryId: string) => {
+    setAddingTaskForStory(userStoryId);
+    setSelectedTask(null);
+    setDialogOpen(true);
+  };
 
+  const handleSaveTask = async (taskData: Partial<Task>) => {
     try {
-      const payload = {
-        user_story_id: updatedTask.user_story_id || selectedTask.user_story_id,
-        title: updatedTask.title,
-        description: updatedTask.description,
-        status: updatedTask.status,
-        estimated_hours: updatedTask.estimated_hours,
-        assignee_id: updatedTask.assignee_id,
-      };
+      if (addingTaskForStory) {
+        // Creating new task
+        const payload: {
+          user_story_id: string;
+          title: string;
+          description: string;
+          status: string;
+          estimated_hours?: number;
+          assignee_id?: string;
+        } = {
+          user_story_id: addingTaskForStory,
+          title: taskData.title!,
+          description: taskData.description!,
+          status: taskData.status!,
+          estimated_hours: taskData.estimated_hours,
+          assignee_id: taskData.assignee_id,
+        };
 
-      const updatedTaskData = await tasksApi.update(selectedTask.id, payload);
+        const newTask = await tasksApi.create(payload);
 
-      // Update local state with the response from API
-      const tasks = storyTasks[selectedTask.user_story_id] || [];
-      const updatedTasks = tasks.map((t) =>
-        t.id === updatedTaskData.id ? updatedTaskData : t,
-      );
-      setStoryTasks((prev) => ({
-        ...prev,
-        [selectedTask.user_story_id]: updatedTasks,
-      }));
+        // Add new task to local state
+        const tasks = storyTasks[addingTaskForStory] || [];
+        setStoryTasks((prev) => ({
+          ...prev,
+          [addingTaskForStory]: [...tasks, newTask],
+        }));
 
-      console.log("Task updated successfully:", updatedTaskData);
+        console.log("Task created successfully:", newTask);
+      } else if (selectedTask) {
+        // Updating existing task
+        const payload = {
+          user_story_id: taskData.user_story_id || selectedTask.user_story_id,
+          title: taskData.title,
+          description: taskData.description,
+          status: taskData.status,
+          estimated_hours: taskData.estimated_hours,
+          assignee_id: taskData.assignee_id,
+        };
+
+        const updatedTaskData = await tasksApi.update(selectedTask.id, payload);
+
+        // Update local state with the response from API
+        const tasks = storyTasks[selectedTask.user_story_id] || [];
+        const updatedTasks = tasks.map((t) =>
+          t.id === updatedTaskData.id ? updatedTaskData : t,
+        );
+        setStoryTasks((prev) => ({
+          ...prev,
+          [selectedTask.user_story_id]: updatedTasks,
+        }));
+
+        console.log("Task updated successfully:", updatedTaskData);
+      }
     } catch (error) {
-      console.error("Failed to update task:", error);
+      console.error("Failed to save task:", error);
       // You can add a toast notification here for user feedback
     }
   };
@@ -525,6 +569,7 @@ export default function SprintPage() {
                                 display: "flex",
                                 gap: 0.5,
                                 flexWrap: "wrap",
+                                alignItems: "center",
                               }}
                             >
                               <Chip
@@ -536,17 +581,20 @@ export default function SprintPage() {
                                   bgcolor: "#F3F2F1",
                                 }}
                               />
-                              {story.priority && (
-                                <Chip
-                                  label={story.priority}
-                                  size="small"
-                                  sx={{
-                                    fontSize: "10px",
-                                    height: 18,
-                                    bgcolor: "#FFF4CE",
-                                  }}
-                                />
-                              )}
+                              <Button
+                                startIcon={<Add />}
+                                size="small"
+                                onClick={() => handleAddTask(story.id)}
+                                sx={{
+                                  textTransform: "none",
+                                  fontSize: "11px",
+                                  ml: 1,
+                                  minHeight: 18,
+                                  height: 22,
+                                }}
+                              >
+                                Add Task
+                              </Button>
                             </Box>
                           </Box>
                         </Collapse>

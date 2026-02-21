@@ -37,23 +37,33 @@ export default function TaskDetailsDialog({
   onSave,
 }: TaskDetailsDialogProps) {
   const { data: users = [] } = useUsers();
-  const [title, setTitle] = useState(task?.title || "");
-  const [description, setDescription] = useState(task?.description || "");
-  const [status, setStatus] = useState(task?.status || "new");
-  const [assigneeId, setAssigneeId] = useState(task?.assignee_id || "");
-  const [estimatedHours, setEstimatedHours] = useState(
-    task?.estimated_hours || 0,
-  );
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("new");
+  const [assigneeId, setAssigneeId] = useState("");
+  const [estimatedHours, setEstimatedHours] = useState(0);
   const [errors, setErrors] = useState({ title: false, description: false });
 
-  // Sync state when dialog opens with a task
+  const isEditMode = !!task;
+
+  // Sync state when dialog opens
   useEffect(() => {
-    if (task && open) {
-      setTitle(task.title);
-      setDescription(task.description || "");
-      setStatus(task.status);
-      setAssigneeId(task.assignee_id || "");
-      setEstimatedHours(task.estimated_hours || 0);
+    if (open) {
+      if (task) {
+        // Edit mode - populate with task data
+        setTitle(task.title);
+        setDescription(task.description || "");
+        setStatus(task.status);
+        setAssigneeId(task.assignee_id || "");
+        setEstimatedHours(task.estimated_hours || 0);
+      } else {
+        // Add mode - reset to defaults
+        setTitle("");
+        setDescription("");
+        setStatus("new");
+        setAssigneeId("");
+        setEstimatedHours(0);
+      }
       setErrors({ title: false, description: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,15 +81,20 @@ export default function TaskDetailsDialog({
       return;
     }
 
-    if (onSave && task) {
-      onSave({
-        id: task.id,
+    if (onSave) {
+      const taskData: Partial<Task> = {
         title,
         description,
         status,
         assignee_id: assigneeId || undefined,
         estimated_hours: estimatedHours,
-      });
+      };
+
+      if (task) {
+        taskData.id = task.id;
+      }
+
+      onSave(taskData);
     }
     onClose();
   };
@@ -88,11 +103,9 @@ export default function TaskDetailsDialog({
     onClose();
   };
 
-  if (!task) return null;
-
   return (
     <Dialog
-      key={task.id}
+      key={task?.id || "new-task"}
       open={open}
       onClose={handleClose}
       maxWidth="md"
@@ -124,26 +137,38 @@ export default function TaskDetailsDialog({
                 letterSpacing: "0.5px",
               }}
             >
-              USER STORY {userStoryId || task.user_story_id}
+              USER STORY {userStoryId || task?.user_story_id}
             </Typography>
           </Box>
-          {/* Task Number and Title */}
-          <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.5 }}>
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{ fontWeight: 400, color: "#323130" }}
-            >
-              {task.task_no}
-            </Typography>
+          {/* Task Number and Title - Only show in edit mode */}
+          {isEditMode && task && (
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.5 }}>
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{ fontWeight: 400, color: "#323130" }}
+              >
+                {task.task_no}
+              </Typography>
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{ fontWeight: 400, color: "#323130" }}
+              >
+                {task.title}
+              </Typography>
+            </Box>
+          )}
+          {/* Add Task Title - Show in add mode */}
+          {!isEditMode && (
             <Typography
               variant="h6"
               component="div"
               sx={{ fontWeight: 400, color: "#323130" }}
             >
-              {task.title}
+              Add New Task
             </Typography>
-          </Box>
+          )}
         </Box>
         <IconButton onClick={handleClose} size="small">
           <Close />
@@ -232,7 +257,7 @@ export default function TaskDetailsDialog({
           Cancel
         </Button>
         <Button onClick={handleSave} variant="contained" color="primary">
-          Save Changes
+          {isEditMode ? "Save Changes" : "Add Task"}
         </Button>
       </DialogActions>
     </Dialog>
