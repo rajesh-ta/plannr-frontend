@@ -9,7 +9,16 @@ export interface UserStory {
   status: string;
   priority?: string;
   assigned_to?: string;
+  assignee_id?: string;
   created_at: string;
+}
+
+export interface UserStoryCreatePayload {
+  sprint_id: string;
+  title: string;
+  description?: string;
+  status: string;
+  assignee_id?: string;
 }
 
 export const userStoriesApi = {
@@ -17,6 +26,11 @@ export const userStoriesApi = {
     const response = await apiClient.get<UserStory[]>(
       `/user-stories/sprint/${sprintId}`,
     );
+    return response.data;
+  },
+
+  create: async (payload: UserStoryCreatePayload) => {
+    const response = await apiClient.post<UserStory>(`/user-stories/`, payload);
     return response.data;
   },
 };

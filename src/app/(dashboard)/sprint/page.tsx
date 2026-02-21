@@ -12,6 +12,7 @@ import {
   Divider,
   Chip,
   Button,
+  Menu,
 } from "@mui/material";
 import {
   KeyboardArrowDown,
@@ -21,13 +22,19 @@ import {
   People,
   Add,
   ViewWeek,
+  MenuBook,
 } from "@mui/icons-material";
 import { useProject } from "@/contexts/ProjectContext";
 import { sprintsApi, Sprint } from "@/services/api/sprints";
-import { userStoriesApi, UserStory } from "@/services/api/userStories";
+import {
+  userStoriesApi,
+  UserStory,
+  UserStoryCreatePayload,
+} from "@/services/api/userStories";
 import { tasksApi, Task } from "@/services/api/tasks";
 import TaskCard from "@/components/sprint/TaskCard";
 import TaskDetailsDialog from "@/components/sprint/TaskDetailsDialog";
+import UserStoryDialog from "@/components/sprint/UserStoryDialog";
 import { useUsers } from "@/hooks/useUsers";
 
 export default function SprintPage() {
@@ -52,6 +59,9 @@ export default function SprintPage() {
   const [addingTaskForStory, setAddingTaskForStory] = useState<string | null>(
     null,
   );
+  const [newWorkItemAnchor, setNewWorkItemAnchor] =
+    useState<null | HTMLElement>(null);
+  const [userStoryDialogOpen, setUserStoryDialogOpen] = useState(false);
 
   // Fetch users using React Query
   useUsers();
@@ -302,6 +312,14 @@ export default function SprintPage() {
     }
   };
 
+  const handleSaveUserStory = async (payload: UserStoryCreatePayload) => {
+    const newStory = await userStoriesApi.create(payload);
+    // If the new story belongs to the selected sprint, add it to the list
+    if (newStory.sprint_id === selectedSprint) {
+      setUserStories((prev) => [...prev, newStory]);
+    }
+  };
+
   const groupTasksByStatus = (tasks: Task[]) => {
     const groups: { [key: string]: Task[] } = {
       new: [],
@@ -389,6 +407,7 @@ export default function SprintPage() {
             <Button
               variant="contained"
               startIcon={<Add />}
+              onClick={(e) => setNewWorkItemAnchor(e.currentTarget)}
               sx={{
                 bgcolor: "#0078D4",
                 textTransform: "none",
@@ -401,6 +420,31 @@ export default function SprintPage() {
             >
               New Work Item
             </Button>
+            <Menu
+              anchorEl={newWorkItemAnchor}
+              open={Boolean(newWorkItemAnchor)}
+              onClose={() => setNewWorkItemAnchor(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
+              PaperProps={{
+                sx: { boxShadow: "0 2px 8px rgba(0,0,0,0.15)", minWidth: 200 },
+              }}
+            >
+              <MenuItem
+                onClick={() => {
+                  setNewWorkItemAnchor(null);
+                  setUserStoryDialogOpen(true);
+                }}
+                sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+              >
+                <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
+                Add User Story
+              </MenuItem>
+              <MenuItem disabled sx={{ fontSize: "13px", py: 1, gap: 1.5 }}>
+                <Add sx={{ fontSize: 18, color: "#605E5C" }} />
+                Add Sprint
+              </MenuItem>
+            </Menu>
             <Button
               variant="outlined"
               startIcon={<ViewWeek />}
@@ -736,6 +780,13 @@ export default function SprintPage() {
         task={selectedTask}
         userStory={getSelectedUserStory() ?? undefined}
         onSave={handleSaveTask}
+      />
+      <UserStoryDialog
+        open={userStoryDialogOpen}
+        onClose={() => setUserStoryDialogOpen(false)}
+        sprints={sprints}
+        defaultSprintId={selectedSprint}
+        onSave={handleSaveUserStory}
       />
     </Box>
   );
