@@ -7,8 +7,15 @@ export interface Sprint {
   start_date?: string;
   end_date?: string;
   status: string;
-  sprint_number: number;
   created_at: string;
+}
+
+export interface SprintCreatePayload {
+  name: string;
+  project_id: string;
+  start_date?: string;
+  end_date?: string;
+  status: string;
 }
 
 export const sprintsApi = {
@@ -16,6 +23,11 @@ export const sprintsApi = {
     const response = await apiClient.get<Sprint[]>(
       `/sprints/project/${projectId}`,
     );
+    return response.data;
+  },
+
+  create: async (payload: SprintCreatePayload) => {
+    const response = await apiClient.post<Sprint>(`/sprints/`, payload);
     return response.data;
   },
 };

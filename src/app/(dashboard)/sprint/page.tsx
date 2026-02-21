@@ -26,9 +26,14 @@ import {
   MoreVert,
   Edit,
   Delete,
+  DirectionsRun,
 } from "@mui/icons-material";
 import { useProject } from "@/contexts/ProjectContext";
-import { sprintsApi, Sprint } from "@/services/api/sprints";
+import {
+  sprintsApi,
+  Sprint,
+  SprintCreatePayload,
+} from "@/services/api/sprints";
 import {
   userStoriesApi,
   UserStory,
@@ -38,6 +43,7 @@ import { tasksApi, Task } from "@/services/api/tasks";
 import TaskCard from "@/components/sprint/TaskCard";
 import TaskDetailsDialog from "@/components/sprint/TaskDetailsDialog";
 import UserStoryDialog from "@/components/sprint/UserStoryDialog";
+import SprintDialog from "@/components/sprint/SprintDialog";
 import { useUsers } from "@/hooks/useUsers";
 import PersonIcon from "@mui/icons-material/Person";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -70,6 +76,8 @@ export default function SprintPage() {
   const [editingUserStory, setEditingUserStory] = useState<UserStory | null>(
     null,
   );
+  const [sprintDialogOpen, setSprintDialogOpen] = useState(false);
+  const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
   const [storyMenuAnchor, setStoryMenuAnchor] = useState<null | HTMLElement>(
     null,
   );
@@ -339,6 +347,12 @@ export default function SprintPage() {
     }
   };
 
+  const handleSaveSprint = async (payload: SprintCreatePayload) => {
+    const created = await sprintsApi.create(payload);
+    setSprints((prev) => [...prev, created]);
+    setSelectedSprint(created.id);
+  };
+
   const handleStoryMenuOpen = (
     e: React.MouseEvent<HTMLElement>,
     storyId: string,
@@ -499,8 +513,15 @@ export default function SprintPage() {
                 <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
                 Add User Story
               </MenuItem>
-              <MenuItem disabled sx={{ fontSize: "13px", py: 1, gap: 1.5 }}>
-                <Add sx={{ fontSize: 18, color: "#605E5C" }} />
+              <MenuItem
+                onClick={() => {
+                  setNewWorkItemAnchor(null);
+                  setEditingSprint(null);
+                  setSprintDialogOpen(true);
+                }}
+                sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+              >
+                <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
                 Add Sprint
               </MenuItem>
             </Menu>
@@ -1013,6 +1034,16 @@ export default function SprintPage() {
         defaultSprintId={selectedSprint}
         editStory={editingUserStory}
         onSave={handleSaveUserStory}
+      />
+      <SprintDialog
+        open={sprintDialogOpen}
+        onClose={() => {
+          setSprintDialogOpen(false);
+          setEditingSprint(null);
+        }}
+        projectId={selectedProjectId || ""}
+        editSprint={editingSprint}
+        onSave={handleSaveSprint}
       />
     </Box>
   );
