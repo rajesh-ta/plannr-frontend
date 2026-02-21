@@ -14,6 +14,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import { getTaskStatusStyle } from "@/constants/statusColors";
 import { Task } from "@/services/api/tasks";
 import { useUserById } from "@/hooks/useUsers";
 
@@ -178,12 +179,14 @@ export default function TaskCard({
       </Typography>
       <Box sx={{ mb: assigneeName ? 1 : 0 }}>
         <Chip
-          label={task.status}
+          label={getTaskStatusStyle(task.status).label || task.status}
           size="small"
           sx={{
             fontSize: "10px",
             height: 18,
-            bgcolor: "#F3F2F1",
+            bgcolor: getTaskStatusStyle(task.status).bg,
+            color: getTaskStatusStyle(task.status).color,
+            fontWeight: 500,
           }}
         />
       </Box>

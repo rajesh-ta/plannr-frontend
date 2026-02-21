@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getUserStoryStatusStyle } from "@/constants/statusColors";
 import {
   Box,
   FormControl,
@@ -840,12 +841,14 @@ export default function SprintPage() {
                             }}
                           >
                             <Chip
-                              label={story.status}
+                              label={getUserStoryStatusStyle(story.status).label || story.status}
                               size="small"
                               sx={{
                                 fontSize: "10px",
                                 height: 18,
-                                bgcolor: "#F3F2F1",
+                                bgcolor: getUserStoryStatusStyle(story.status).bg,
+                                color: getUserStoryStatusStyle(story.status).color,
+                                fontWeight: 500,
                               }}
                             />
                             <Button
