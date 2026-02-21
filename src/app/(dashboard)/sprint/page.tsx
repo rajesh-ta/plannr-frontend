@@ -17,12 +17,12 @@ import {
 import {
   KeyboardArrowDown,
   ExpandMore,
-  ExpandLess,
   StarBorder,
   People,
   Add,
   ViewWeek,
   MenuBook,
+  PlayArrow,
 } from "@mui/icons-material";
 import { useProject } from "@/contexts/ProjectContext";
 import { sprintsApi, Sprint } from "@/services/api/sprints";
@@ -36,6 +36,8 @@ import TaskCard from "@/components/sprint/TaskCard";
 import TaskDetailsDialog from "@/components/sprint/TaskDetailsDialog";
 import UserStoryDialog from "@/components/sprint/UserStoryDialog";
 import { useUsers } from "@/hooks/useUsers";
+import PersonIcon from "@mui/icons-material/Person";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 
 export default function SprintPage() {
   const { selectedProjectId } = useProject();
@@ -64,7 +66,7 @@ export default function SprintPage() {
   const [userStoryDialogOpen, setUserStoryDialogOpen] = useState(false);
 
   // Fetch users using React Query
-  useUsers();
+  const { data: users = [] } = useUsers();
 
   useEffect(() => {
     const fetchSprints = async () => {
@@ -585,95 +587,201 @@ export default function SprintPage() {
                     }}
                   >
                     {/* User Story Column */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: 1,
-                      }}
-                    >
-                      <IconButton
-                        size="small"
-                        sx={{ mt: -0.5 }}
+                    <Box>
+                      {/* Title Row — always visible */}
+                      <Box
                         onClick={() => toggleStory(story.id)}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.75,
+                          cursor: "pointer",
+                          userSelect: "none",
+                          "&:hover .story-title": { color: "#0078D4" },
+                        }}
                       >
-                        {expandedStories[story.id] ? (
-                          <ExpandLess sx={{ fontSize: 18 }} />
-                        ) : (
-                          <ExpandMore sx={{ fontSize: 18 }} />
-                        )}
-                      </IconButton>
-                      <Box>
+                        {/* Rotating triangle */}
                         <Box
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 1,
-                            mb: 0.5,
+                            flexShrink: 0,
+                            transition: "transform 0.2s ease",
+                            transform: expandedStories[story.id]
+                              ? "rotate(90deg)"
+                              : "rotate(0deg)",
+                            color: "#605E5C",
+                          }}
+                        >
+                          <PlayArrow sx={{ fontSize: 13 }} />
+                        </Box>
+
+                        {/* User story icon: two stacked blue bars */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "2px",
+                            flexShrink: 0,
                           }}
                         >
                           <Box
                             sx={{
-                              width: 16,
-                              height: 16,
+                              width: 14,
+                              height: 5,
                               bgcolor: "#0078D4",
-                              borderRadius: "2px",
+                              borderRadius: "1px",
                             }}
                           />
-                          <Typography
-                            sx={{ fontSize: "13px", fontWeight: 500 }}
-                          >
-                            {story.title}
-                          </Typography>
+                          <Box
+                            sx={{
+                              width: 14,
+                              height: 5,
+                              bgcolor: "#0078D4",
+                              borderRadius: "1px",
+                            }}
+                          />
                         </Box>
-                        <Collapse in={expandedStories[story.id]} timeout="auto">
-                          <Box sx={{ mt: 1, pl: 3 }}>
-                            {story.description && (
-                              <Typography
-                                sx={{
-                                  fontSize: "12px",
-                                  mb: 1,
-                                  color: "#605E5C",
-                                }}
-                              >
-                                {story.description}
-                              </Typography>
-                            )}
-                            <Box
+
+                        {/* Title */}
+                        <Typography
+                          className="story-title"
+                          sx={{
+                            fontSize: "13px",
+                            color: "#323130",
+                            lineHeight: 1.4,
+                            flex: 1,
+                            transition: "color 0.15s ease",
+                          }}
+                        >
+                          {story.title}
+                        </Typography>
+                      </Box>
+
+                      {/* Expandable Details */}
+                      <Collapse in={expandedStories[story.id]} timeout={250}>
+                        <Box sx={{ pl: 3.5, pt: 1 }}>
+                          {/* Story No */}
+                          {story.user_story_no && (
+                            <Typography
                               sx={{
-                                display: "flex",
-                                gap: 0.5,
-                                flexWrap: "wrap",
-                                alignItems: "center",
+                                fontSize: "11px",
+                                color: "#7B2FBE",
+                                fontWeight: 600,
+                                textDecoration: "underline",
+                                mb: 0.5,
                               }}
                             >
-                              <Chip
-                                label={story.status}
-                                size="small"
-                                sx={{
-                                  fontSize: "10px",
-                                  height: 18,
-                                  bgcolor: "#F3F2F1",
-                                }}
-                              />
-                              <Button
-                                startIcon={<Add />}
-                                size="small"
-                                onClick={() => handleAddTask(story.id)}
-                                sx={{
-                                  textTransform: "none",
-                                  fontSize: "11px",
-                                  ml: 1,
-                                  minHeight: 18,
-                                  height: 22,
-                                }}
-                              >
-                                Add Task
-                              </Button>
-                            </Box>
+                              {story.user_story_no}
+                            </Typography>
+                          )}
+
+                          {/* Description */}
+                          {story.description && (
+                            <Typography
+                              sx={{
+                                fontSize: "11px",
+                                color: "#605E5C",
+                                mb: 1,
+                                lineHeight: 1.4,
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {story.description}
+                            </Typography>
+                          )}
+
+                          {/* Status + Add Task */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                              flexWrap: "wrap",
+                              mb: 0.75,
+                            }}
+                          >
+                            <Chip
+                              label={story.status}
+                              size="small"
+                              sx={{
+                                fontSize: "10px",
+                                height: 18,
+                                bgcolor: "#F3F2F1",
+                              }}
+                            />
+                            <Button
+                              startIcon={
+                                <Add sx={{ fontSize: "12px !important" }} />
+                              }
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddTask(story.id);
+                              }}
+                              sx={{
+                                textTransform: "none",
+                                fontSize: "11px",
+                                minHeight: 18,
+                                height: 20,
+                                py: 0,
+                                color: "#7B2FBE",
+                              }}
+                            >
+                              Add Task
+                            </Button>
                           </Box>
-                        </Collapse>
-                      </Box>
+
+                          {/* Assignee */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                            }}
+                          >
+                            {(() => {
+                              const assignee = users.find(
+                                (u) => u.id === story.assignee_id,
+                              );
+                              return assignee ? (
+                                <>
+                                  <PersonIcon
+                                    sx={{
+                                      width: 14,
+                                      height: 14,
+                                      color: "#107C10",
+                                    }}
+                                  />
+                                  <Typography
+                                    sx={{ fontSize: "11px", color: "#323130" }}
+                                  >
+                                    {assignee.name}
+                                  </Typography>
+                                </>
+                              ) : (
+                                <>
+                                  <PersonOutlineIcon
+                                    sx={{
+                                      width: 14,
+                                      height: 14,
+                                      color: "#605E5C",
+                                    }}
+                                  />
+                                  <Typography
+                                    sx={{ fontSize: "11px", color: "#605E5C" }}
+                                  >
+                                    Unassigned
+                                  </Typography>
+                                </>
+                              );
+                            })()}
+                          </Box>
+                        </Box>
+                      </Collapse>
                     </Box>
 
                     {/* New Column */}
