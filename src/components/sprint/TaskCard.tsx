@@ -13,6 +13,7 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import { Task } from "@/services/api/tasks";
 import { useUserById } from "@/hooks/useUsers";
 
@@ -122,14 +123,8 @@ export default function TaskCard({
           mb: 1,
         }}
       >
-        <Box
-          sx={{
-            width: 16,
-            height: 16,
-            bgcolor: "#605E5C",
-            borderRadius: "2px",
-            flexShrink: 0,
-          }}
+        <AssignmentIcon
+          sx={{ fontSize: 16, color: "#0078D4", flexShrink: 0, mt: "1px" }}
         />
         {tooltipContent ? (
           <Tooltip

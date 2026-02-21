@@ -15,7 +15,7 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
-import { Close, Assignment } from "@mui/icons-material";
+import { Close, MenuBook } from "@mui/icons-material";
 import { Task } from "@/services/api/tasks";
 import { UserStory } from "@/services/api/userStories";
 import { useUsers } from "@/hooks/useUsers";
@@ -129,7 +129,7 @@ export default function TaskDetailsDialog({
         <Box>
           {/* User Story Header */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            <Assignment sx={{ fontSize: 20, color: "#0078D4" }} />
+            <MenuBook sx={{ fontSize: 16, color: "#0078D4" }} />
             <Typography
               variant="caption"
               sx={{

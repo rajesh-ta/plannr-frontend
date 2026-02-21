@@ -684,32 +684,14 @@ export default function SprintPage() {
                             <PlayArrow sx={{ fontSize: 13 }} />
                           </Box>
 
-                          {/* User story icon: two stacked blue bars */}
-                          <Box
+                          {/* User story icon */}
+                          <MenuBook
                             sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: "2px",
+                              fontSize: 16,
+                              color: "#0078D4",
                               flexShrink: 0,
                             }}
-                          >
-                            <Box
-                              sx={{
-                                width: 14,
-                                height: 5,
-                                bgcolor: "#0078D4",
-                                borderRadius: "1px",
-                              }}
-                            />
-                            <Box
-                              sx={{
-                                width: 14,
-                                height: 5,
-                                bgcolor: "#0078D4",
-                                borderRadius: "1px",
-                              }}
-                            />
-                          </Box>
+                          />
 
                           {/* Title */}
                           <Typography
