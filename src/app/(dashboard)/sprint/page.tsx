@@ -23,6 +23,9 @@ import {
   ViewWeek,
   MenuBook,
   PlayArrow,
+  MoreVert,
+  Edit,
+  Delete,
 } from "@mui/icons-material";
 import { useProject } from "@/contexts/ProjectContext";
 import { sprintsApi, Sprint } from "@/services/api/sprints";
@@ -64,6 +67,13 @@ export default function SprintPage() {
   const [newWorkItemAnchor, setNewWorkItemAnchor] =
     useState<null | HTMLElement>(null);
   const [userStoryDialogOpen, setUserStoryDialogOpen] = useState(false);
+  const [editingUserStory, setEditingUserStory] = useState<UserStory | null>(
+    null,
+  );
+  const [storyMenuAnchor, setStoryMenuAnchor] = useState<null | HTMLElement>(
+    null,
+  );
+  const [storyMenuId, setStoryMenuId] = useState<string | null>(null);
 
   // Fetch users using React Query
   const { data: users = [] } = useUsers();
@@ -314,11 +324,58 @@ export default function SprintPage() {
     }
   };
 
-  const handleSaveUserStory = async (payload: UserStoryCreatePayload) => {
-    const newStory = await userStoriesApi.create(payload);
-    // If the new story belongs to the selected sprint, add it to the list
-    if (newStory.sprint_id === selectedSprint) {
-      setUserStories((prev) => [...prev, newStory]);
+  const handleSaveUserStory = async (
+    payload: UserStoryCreatePayload,
+    id?: string,
+  ) => {
+    if (id) {
+      const updated = await userStoriesApi.update(id, payload);
+      setUserStories((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    } else {
+      const newStory = await userStoriesApi.create(payload);
+      if (newStory.sprint_id === selectedSprint) {
+        setUserStories((prev) => [...prev, newStory]);
+      }
+    }
+  };
+
+  const handleStoryMenuOpen = (
+    e: React.MouseEvent<HTMLElement>,
+    storyId: string,
+  ) => {
+    e.stopPropagation();
+    setStoryMenuAnchor(e.currentTarget);
+    setStoryMenuId(storyId);
+  };
+
+  const handleStoryMenuClose = () => {
+    setStoryMenuAnchor(null);
+    setStoryMenuId(null);
+  };
+
+  const handleEditStory = () => {
+    const story = userStories.find((s) => s.id === storyMenuId);
+    if (story) {
+      setEditingUserStory(story);
+      setUserStoryDialogOpen(true);
+    }
+    handleStoryMenuClose();
+  };
+
+  const handleDeleteStory = async () => {
+    if (!storyMenuId) return;
+    const idToDelete = storyMenuId;
+    handleStoryMenuClose();
+    try {
+      await userStoriesApi.delete(idToDelete);
+      setUserStories((prev) => prev.filter((s) => s.id !== idToDelete));
+      setStoryTasks((prev) => {
+        const next = { ...prev };
+        delete next[idToDelete];
+        return next;
+      });
+    } catch (error) {
+      console.error("Failed to delete user story:", error);
     }
   };
 
@@ -590,72 +647,147 @@ export default function SprintPage() {
                     <Box>
                       {/* Title Row — always visible */}
                       <Box
-                        onClick={() => toggleStory(story.id)}
                         sx={{
                           display: "flex",
                           alignItems: "center",
                           gap: 0.75,
-                          cursor: "pointer",
                           userSelect: "none",
                           "&:hover .story-title": { color: "#0078D4" },
+                          "&:hover .story-menu-btn": { opacity: 1 },
                         }}
                       >
-                        {/* Rotating triangle */}
+                        {/* Clickable left part */}
                         <Box
+                          onClick={() => toggleStory(story.id)}
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            flexShrink: 0,
-                            transition: "transform 0.2s ease",
-                            transform: expandedStories[story.id]
-                              ? "rotate(90deg)"
-                              : "rotate(0deg)",
-                            color: "#605E5C",
-                          }}
-                        >
-                          <PlayArrow sx={{ fontSize: 13 }} />
-                        </Box>
-
-                        {/* User story icon: two stacked blue bars */}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "2px",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 14,
-                              height: 5,
-                              bgcolor: "#0078D4",
-                              borderRadius: "1px",
-                            }}
-                          />
-                          <Box
-                            sx={{
-                              width: 14,
-                              height: 5,
-                              bgcolor: "#0078D4",
-                              borderRadius: "1px",
-                            }}
-                          />
-                        </Box>
-
-                        {/* Title */}
-                        <Typography
-                          className="story-title"
-                          sx={{
-                            fontSize: "13px",
-                            color: "#323130",
-                            lineHeight: 1.4,
+                            gap: 0.75,
                             flex: 1,
-                            transition: "color 0.15s ease",
+                            cursor: "pointer",
+                            minWidth: 0,
                           }}
                         >
-                          {story.title}
-                        </Typography>
+                          {/* Rotating triangle */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              flexShrink: 0,
+                              transition: "transform 0.2s ease",
+                              transform: expandedStories[story.id]
+                                ? "rotate(90deg)"
+                                : "rotate(0deg)",
+                              color: "#605E5C",
+                            }}
+                          >
+                            <PlayArrow sx={{ fontSize: 13 }} />
+                          </Box>
+
+                          {/* User story icon: two stacked blue bars */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "2px",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 14,
+                                height: 5,
+                                bgcolor: "#0078D4",
+                                borderRadius: "1px",
+                              }}
+                            />
+                            <Box
+                              sx={{
+                                width: 14,
+                                height: 5,
+                                bgcolor: "#0078D4",
+                                borderRadius: "1px",
+                              }}
+                            />
+                          </Box>
+
+                          {/* Title */}
+                          <Typography
+                            className="story-title"
+                            sx={{
+                              fontSize: "13px",
+                              color: "#323130",
+                              lineHeight: 1.4,
+                              flex: 1,
+                              transition: "color 0.15s ease",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {story.title}
+                          </Typography>
+                        </Box>
+
+                        {/* Three-dot menu button */}
+                        <IconButton
+                          className="story-menu-btn"
+                          size="small"
+                          onClick={(e) => handleStoryMenuOpen(e, story.id)}
+                          sx={{
+                            opacity: 0,
+                            transition: "opacity 0.15s ease",
+                            p: 0.25,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <MoreVert sx={{ fontSize: 16 }} />
+                        </IconButton>
+
+                        {/* Story Actions Menu */}
+                        <Menu
+                          anchorEl={storyMenuAnchor}
+                          open={
+                            Boolean(storyMenuAnchor) && storyMenuId === story.id
+                          }
+                          onClose={handleStoryMenuClose}
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "right",
+                          }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "right",
+                          }}
+                          slotProps={{
+                            paper: {
+                              sx: {
+                                minWidth: 120,
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                borderRadius: "4px",
+                              },
+                            },
+                          }}
+                        >
+                          <MenuItem
+                            onClick={handleEditStory}
+                            sx={{ fontSize: "13px", gap: 1 }}
+                          >
+                            <Edit sx={{ fontSize: 15, color: "#605E5C" }} />
+                            Edit
+                          </MenuItem>
+                          <MenuItem
+                            onClick={handleDeleteStory}
+                            sx={{
+                              fontSize: "13px",
+                              gap: 1,
+                              color: "#D13438",
+                            }}
+                          >
+                            <Delete sx={{ fontSize: 15 }} />
+                            Delete
+                          </MenuItem>
+                        </Menu>
                       </Box>
 
                       {/* Expandable Details */}
@@ -891,9 +1023,13 @@ export default function SprintPage() {
       />
       <UserStoryDialog
         open={userStoryDialogOpen}
-        onClose={() => setUserStoryDialogOpen(false)}
+        onClose={() => {
+          setUserStoryDialogOpen(false);
+          setEditingUserStory(null);
+        }}
         sprints={sprints}
         defaultSprintId={selectedSprint}
+        editStory={editingUserStory}
         onSave={handleSaveUserStory}
       />
     </Box>

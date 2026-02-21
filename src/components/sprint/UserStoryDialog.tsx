@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { Close, MenuBook } from "@mui/icons-material";
 import { Sprint } from "@/services/api/sprints";
-import { UserStoryCreatePayload } from "@/services/api/userStories";
+import { UserStory, UserStoryCreatePayload } from "@/services/api/userStories";
 import { useUsers } from "@/hooks/useUsers";
 
 interface UserStoryDialogProps {
@@ -25,7 +25,8 @@ interface UserStoryDialogProps {
   onClose: () => void;
   sprints: Sprint[];
   defaultSprintId?: string;
-  onSave: (payload: UserStoryCreatePayload) => Promise<void>;
+  editStory?: UserStory | null;
+  onSave: (payload: UserStoryCreatePayload, id?: string) => Promise<void>;
 }
 
 const USER_STORY_STATUS_OPTIONS = ["new", "active", "closed", "removed"];
@@ -35,8 +36,10 @@ export default function UserStoryDialog({
   onClose,
   sprints,
   defaultSprintId,
+  editStory,
   onSave,
 }: UserStoryDialogProps) {
+  const isEdit = !!editStory;
   const { data: users = [] } = useUsers();
   const [sprintId, setSprintId] = useState("");
   const [title, setTitle] = useState("");
@@ -52,15 +55,23 @@ export default function UserStoryDialog({
 
   useEffect(() => {
     if (open) {
-      setSprintId(defaultSprintId || "");
-      setTitle("");
-      setDescription("");
-      setStatus("new");
-      setAssigneeId("");
+      if (editStory) {
+        setSprintId(editStory.sprint_id);
+        setTitle(editStory.title);
+        setDescription(editStory.description || "");
+        setStatus(editStory.status);
+        setAssigneeId(editStory.assignee_id || "");
+      } else {
+        setSprintId(defaultSprintId || "");
+        setTitle("");
+        setDescription("");
+        setStatus("new");
+        setAssigneeId("");
+      }
       setErrors({ sprintId: false, title: false, description: false });
       setSaving(false);
     }
-  }, [open, defaultSprintId]);
+  }, [open, defaultSprintId, editStory]);
 
   const handleSave = async () => {
     const newErrors = {
@@ -76,13 +87,16 @@ export default function UserStoryDialog({
 
     setSaving(true);
     try {
-      await onSave({
-        sprint_id: sprintId,
-        title: title.trim(),
-        description: description.trim(),
-        status,
-        assignee_id: assigneeId || undefined,
-      });
+      await onSave(
+        {
+          sprint_id: sprintId,
+          title: title.trim(),
+          description: description.trim(),
+          status,
+          assignee_id: assigneeId || undefined,
+        },
+        editStory?.id,
+      );
       onClose();
     } finally {
       setSaving(false);
@@ -107,21 +121,21 @@ export default function UserStoryDialog({
         }}
       >
         <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          {/* <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
             <MenuBook sx={{ fontSize: 20, color: "#0078D4" }} />
             <Typography
               variant="caption"
               sx={{ color: "#0078D4", fontWeight: 600, letterSpacing: "0.5px" }}
             >
-              NEW USER STORY
+              {isEdit ? "EDIT USER STORY" : "NEW USER STORY"}
             </Typography>
-          </Box>
+          </Box> */}
           <Typography
             variant="h6"
             component="div"
             sx={{ fontWeight: 400, color: "#323130" }}
           >
-            Add User Story
+            {isEdit ? "Edit User Story" : "Add User Story"}
           </Typography>
         </Box>
         <IconButton onClick={onClose} size="small">
@@ -228,7 +242,7 @@ export default function UserStoryDialog({
           color="primary"
           disabled={saving}
         >
-          Add User Story
+          {isEdit ? "Update User Story" : "Add User Story"}
         </Button>
       </DialogActions>
     </Dialog>

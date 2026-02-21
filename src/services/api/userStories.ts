@@ -33,4 +33,16 @@ export const userStoriesApi = {
     const response = await apiClient.post<UserStory>(`/user-stories/`, payload);
     return response.data;
   },
+
+  update: async (id: string, payload: Partial<UserStoryCreatePayload>) => {
+    const response = await apiClient.put<UserStory>(
+      `/user-stories/${id}`,
+      payload,
+    );
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    await apiClient.delete(`/user-stories/${id}`);
+  },
 };
