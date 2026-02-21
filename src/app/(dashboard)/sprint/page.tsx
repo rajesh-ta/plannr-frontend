@@ -28,6 +28,7 @@ import { userStoriesApi, UserStory } from "@/services/api/userStories";
 import { tasksApi, Task } from "@/services/api/tasks";
 import TaskCard from "@/components/sprint/TaskCard";
 import TaskDetailsDialog from "@/components/sprint/TaskDetailsDialog";
+import { useUsers } from "@/hooks/useUsers";
 
 export default function SprintPage() {
   const { selectedProjectId } = useProject();
@@ -48,6 +49,9 @@ export default function SprintPage() {
   }>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  // Fetch users using React Query
+  useUsers();
 
   useEffect(() => {
     const fetchSprints = async () => {

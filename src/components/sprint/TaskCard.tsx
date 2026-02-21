@@ -1,5 +1,8 @@
-import { Box, Typography, Chip, Avatar } from "@mui/material";
+import { Box, Typography, Chip } from "@mui/material";
+import PersonIcon from "@mui/icons-material/Person";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import { Task } from "@/services/api/tasks";
+import { useUserById } from "@/hooks/useUsers";
 
 interface TaskCardProps {
   task: Task;
@@ -7,20 +10,14 @@ interface TaskCardProps {
   onClick: () => void;
 }
 
-const getInitials = (name?: string) => {
-  if (!name) return "?";
-  const parts = name.split(" ");
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
-
 export default function TaskCard({
   task,
   borderColor,
   onClick,
 }: TaskCardProps) {
+  const assignee = useUserById(task.assignee_id);
+  const assigneeName = assignee?.name;
+
   return (
     <Box
       onClick={onClick}
@@ -73,14 +70,7 @@ export default function TaskCard({
       >
         {task.title}
       </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
-        }}
-      >
+      <Box sx={{ mb: assigneeName ? 1 : 0 }}>
         <Chip
           label={task.status}
           size="small"
@@ -90,18 +80,40 @@ export default function TaskCard({
             bgcolor: "#F3F2F1",
           }}
         />
-        {task.assigned_to && (
-          <Avatar
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          mb: task.tags && task.tags.length > 0 ? 1 : 0,
+        }}
+      >
+        {assigneeName ? (
+          <PersonIcon
             sx={{
               width: 20,
               height: 20,
-              fontSize: "9px",
-              bgcolor: "#0078D4",
+              color: "#107C10",
             }}
-          >
-            {getInitials(task.assigned_to)}
-          </Avatar>
+          />
+        ) : (
+          <PersonOutlineIcon
+            sx={{
+              width: 20,
+              height: 20,
+              color: "#605E5C",
+            }}
+          />
         )}
+        <Typography
+          sx={{
+            fontSize: "11px",
+            color: "#323130",
+          }}
+        >
+          {assigneeName || "Unassigned"}
+        </Typography>
       </Box>
       {task.tags && task.tags.length > 0 && (
         <Box sx={{ mt: 1 }}>
