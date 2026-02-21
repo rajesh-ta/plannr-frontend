@@ -15,6 +15,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { getTaskStatusStyle } from "@/constants/statusColors";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { Task } from "@/services/api/tasks";
 import { useUserById } from "@/hooks/useUsers";
 
@@ -35,6 +36,7 @@ export default function TaskCard({
   const assigneeName = assignee?.name;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -56,9 +58,7 @@ export default function TaskCard({
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-    if (onDelete) {
-      onDelete(task.id);
-    }
+    setConfirmDeleteOpen(true);
     handleMenuClose();
   };
 
@@ -237,6 +237,13 @@ export default function TaskCard({
           />
         </Box>
       )}
+      <DeleteConfirmDialog
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={() => onDelete && onDelete(task.id)}
+        itemType="Task"
+        itemName={task.title}
+      />
       <Menu
         anchorEl={anchorEl}
         open={menuOpen}

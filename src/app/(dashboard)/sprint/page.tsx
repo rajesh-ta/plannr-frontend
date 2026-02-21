@@ -47,6 +47,7 @@ import UserStoryDialog from "@/components/sprint/UserStoryDialog";
 import SprintDialog from "@/components/sprint/SprintDialog";
 import { useUsers } from "@/hooks/useUsers";
 import PersonIcon from "@mui/icons-material/Person";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 
 export default function SprintPage() {
@@ -83,6 +84,10 @@ export default function SprintPage() {
     null,
   );
   const [storyMenuId, setStoryMenuId] = useState<string | null>(null);
+  const [deleteStoryConfirmOpen, setDeleteStoryConfirmOpen] = useState(false);
+  const [pendingDeleteStoryId, setPendingDeleteStoryId] = useState<
+    string | null
+  >(null);
 
   // Fetch users using React Query
   const { data: users = [] } = useUsers();
@@ -377,10 +382,16 @@ export default function SprintPage() {
     handleStoryMenuClose();
   };
 
-  const handleDeleteStory = async () => {
-    if (!storyMenuId) return;
-    const idToDelete = storyMenuId;
+  const handleDeleteStoryRequest = () => {
+    setPendingDeleteStoryId(storyMenuId);
+    setDeleteStoryConfirmOpen(true);
     handleStoryMenuClose();
+  };
+
+  const handleDeleteStory = async () => {
+    if (!pendingDeleteStoryId) return;
+    const idToDelete = pendingDeleteStoryId;
+    setPendingDeleteStoryId(null);
     try {
       await userStoriesApi.delete(idToDelete);
       setUserStories((prev) => prev.filter((s) => s.id !== idToDelete));
@@ -781,7 +792,7 @@ export default function SprintPage() {
                             Edit
                           </MenuItem>
                           <MenuItem
-                            onClick={handleDeleteStory}
+                            onClick={handleDeleteStoryRequest}
                             sx={{
                               fontSize: "13px",
                               gap: 1,
@@ -841,13 +852,18 @@ export default function SprintPage() {
                             }}
                           >
                             <Chip
-                              label={getUserStoryStatusStyle(story.status).label || story.status}
+                              label={
+                                getUserStoryStatusStyle(story.status).label ||
+                                story.status
+                              }
                               size="small"
                               sx={{
                                 fontSize: "10px",
                                 height: 18,
-                                bgcolor: getUserStoryStatusStyle(story.status).bg,
-                                color: getUserStoryStatusStyle(story.status).color,
+                                bgcolor: getUserStoryStatusStyle(story.status)
+                                  .bg,
+                                color: getUserStoryStatusStyle(story.status)
+                                  .color,
                                 fontWeight: 500,
                               }}
                             />
@@ -1047,6 +1063,13 @@ export default function SprintPage() {
         projectId={selectedProjectId || ""}
         editSprint={editingSprint}
         onSave={handleSaveSprint}
+      />
+      <DeleteConfirmDialog
+        open={deleteStoryConfirmOpen}
+        onClose={() => setDeleteStoryConfirmOpen(false)}
+        onConfirm={handleDeleteStory}
+        itemType="User Story"
+        itemName={userStories.find((s) => s.id === pendingDeleteStoryId)?.title}
       />
     </Box>
   );
