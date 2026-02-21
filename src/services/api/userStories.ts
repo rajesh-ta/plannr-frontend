@@ -2,6 +2,7 @@ import { apiClient } from "./client";
 
 export interface UserStory {
   id: string;
+  user_story_no?: string;
   title: string;
   description?: string;
   sprint_id: string;

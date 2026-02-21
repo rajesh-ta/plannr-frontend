@@ -17,13 +17,14 @@ import {
 } from "@mui/material";
 import { Close, Assignment } from "@mui/icons-material";
 import { Task } from "@/services/api/tasks";
+import { UserStory } from "@/services/api/userStories";
 import { useUsers } from "@/hooks/useUsers";
 
 interface TaskDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   task: Task | null;
-  userStoryId?: string;
+  userStory?: UserStory;
   onSave?: (updatedTask: Partial<Task>) => void;
 }
 
@@ -33,7 +34,7 @@ export default function TaskDetailsDialog({
   open,
   onClose,
   task,
-  userStoryId,
+  userStory,
   onSave,
 }: TaskDetailsDialogProps) {
   const { data: users = [] } = useUsers();
@@ -137,7 +138,7 @@ export default function TaskDetailsDialog({
                 letterSpacing: "0.5px",
               }}
             >
-              USER STORY {userStoryId || task?.user_story_id}
+              USER STORY {userStory?.user_story_no || ""}
             </Typography>
           </Box>
           {/* Task Number and Title - Only show in edit mode */}

@@ -80,7 +80,6 @@ export default function TaskCard({
 
   return (
     <Box
-      onClick={onClick}
       sx={{
         bgcolor: "white",
         border: "1px solid #EDEBE9",
@@ -88,7 +87,6 @@ export default function TaskCard({
         borderRadius: "4px",
         p: 1.5,
         mb: 1,
-        cursor: "pointer",
         position: "relative",
         "&:hover": {
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
@@ -142,11 +140,13 @@ export default function TaskCard({
             leaveDelay={200}
           >
             <Typography
+              onClick={onClick}
               sx={{
                 fontSize: "12px",
                 color: "#0078D4",
                 fontWeight: 500,
                 textDecoration: "underline",
+                cursor: "pointer",
               }}
             >
               {task.task_no}
@@ -154,11 +154,13 @@ export default function TaskCard({
           </Tooltip>
         ) : (
           <Typography
+            onClick={onClick}
             sx={{
               fontSize: "12px",
               color: "#0078D4",
               fontWeight: 500,
               textDecoration: "underline",
+              cursor: "pointer",
             }}
           >
             {task.task_no}
@@ -166,10 +168,15 @@ export default function TaskCard({
         )}
       </Box>
       <Typography
+        onClick={onClick}
         sx={{
           fontSize: "12px",
           mb: 1,
           lineHeight: 1.4,
+          cursor: "pointer",
+          "&:hover": {
+            color: "#0078D4",
+          },
         }}
       >
         {task.title}

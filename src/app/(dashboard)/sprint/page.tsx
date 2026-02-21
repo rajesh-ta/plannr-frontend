@@ -734,7 +734,7 @@ export default function SprintPage() {
         open={dialogOpen}
         onClose={handleCloseDialog}
         task={selectedTask}
-        userStoryId={getSelectedUserStory()?.id}
+        userStory={getSelectedUserStory() ?? undefined}
         onSave={handleSaveTask}
       />
     </Box>
