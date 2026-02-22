@@ -5,16 +5,24 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface ProjectContextType {
   selectedProjectId: string;
   setSelectedProjectId: (id: string) => void;
+  selectedSprintId: string;
+  setSelectedSprintId: (id: string) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedSprintId, setSelectedSprintId] = useState<string>("");
 
   return (
     <ProjectContext.Provider
-      value={{ selectedProjectId, setSelectedProjectId }}
+      value={{
+        selectedProjectId,
+        setSelectedProjectId,
+        selectedSprintId,
+        setSelectedSprintId,
+      }}
     >
       {children}
     </ProjectContext.Provider>

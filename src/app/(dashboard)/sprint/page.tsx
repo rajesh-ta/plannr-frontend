@@ -51,10 +51,10 @@ import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 
 export default function SprintPage() {
-  const { selectedProjectId } = useProject();
+  const { selectedProjectId, selectedSprintId, setSelectedSprintId } =
+    useProject();
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [loadingSprints, setLoadingSprints] = useState(false);
-  const [selectedSprint, setSelectedSprint] = useState("");
   const [userStories, setUserStories] = useState<UserStory[]>([]);
   const [loadingUserStories, setLoadingUserStories] = useState(false);
   const [expandedStories, setExpandedStories] = useState<{
@@ -101,9 +101,9 @@ export default function SprintPage() {
         const data = await sprintsApi.getByProjectId(selectedProjectId);
         setSprints(data);
         if (data.length > 0) {
-          setSelectedSprint(data[0].id);
+          setSelectedSprintId(data[0].id);
         } else {
-          setSelectedSprint("");
+          setSelectedSprintId("");
         }
       } catch (error) {
         console.error("Failed to fetch sprints:", error);
@@ -117,14 +117,14 @@ export default function SprintPage() {
 
   useEffect(() => {
     const fetchUserStories = async () => {
-      if (!selectedSprint) {
+      if (!selectedSprintId) {
         setUserStories([]);
         return;
       }
 
       try {
         setLoadingUserStories(true);
-        const data = await userStoriesApi.getBySprintId(selectedSprint);
+        const data = await userStoriesApi.getBySprintId(selectedSprintId);
         setUserStories(data);
         // Reset expanded state and tasks when fetching new user stories
         setExpandedStories({});
@@ -139,7 +139,7 @@ export default function SprintPage() {
     };
 
     fetchUserStories();
-  }, [selectedSprint]);
+  }, [selectedSprintId]);
 
   // Auto-load tasks for all user stories
   useEffect(() => {
@@ -347,7 +347,7 @@ export default function SprintPage() {
       setUserStories((prev) => prev.map((s) => (s.id === id ? updated : s)));
     } else {
       const newStory = await userStoriesApi.create(payload);
-      if (newStory.sprint_id === selectedSprint) {
+      if (newStory.sprint_id === selectedSprintId) {
         setUserStories((prev) => [...prev, newStory]);
       }
     }
@@ -356,7 +356,7 @@ export default function SprintPage() {
   const handleSaveSprint = async (payload: SprintCreatePayload) => {
     const created = await sprintsApi.create(payload);
     setSprints((prev) => [...prev, created]);
-    setSelectedSprint(created.id);
+    setSelectedSprintId(created.id);
   };
 
   const handleStoryMenuOpen = (
@@ -451,8 +451,8 @@ export default function SprintPage() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <FormControl size="small" sx={{ minWidth: 250 }}>
               <Select
-                value={selectedSprint}
-                onChange={(e) => setSelectedSprint(e.target.value)}
+                value={selectedSprintId}
+                onChange={(e) => setSelectedSprintId(e.target.value)}
                 disabled={loadingSprints || sprints.length === 0}
                 IconComponent={KeyboardArrowDown}
                 sx={{
@@ -1050,7 +1050,7 @@ export default function SprintPage() {
           setEditingUserStory(null);
         }}
         sprints={sprints}
-        defaultSprintId={selectedSprint}
+        defaultSprintId={selectedSprintId}
         editStory={editingUserStory}
         onSave={handleSaveUserStory}
       />
