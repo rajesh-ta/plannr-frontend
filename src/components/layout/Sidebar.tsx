@@ -26,6 +26,7 @@ import {
   Description,
   Assignment,
   GridView,
+  AdminPanelSettings,
 } from "@mui/icons-material";
 import { projectsApi, Project } from "@/services/api/projects";
 import { useProject } from "@/contexts/ProjectContext";
@@ -149,6 +150,36 @@ export default function Sidebar() {
                 primaryTypographyProps={{
                   fontSize: "13px",
                   fontWeight: pathname === "/overview" ? 600 : 500,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+
+          {/* Admin */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => router.push("/admin")}
+              sx={{
+                py: 1,
+                px: 2,
+                "&:hover": { bgcolor: "#EDEBE9" },
+                bgcolor: pathname === "/admin" ? "#E1DFDD" : "transparent",
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <AdminPanelSettings
+                  sx={{
+                    fontSize: 18,
+                    color: pathname === "/admin" ? "#0078D4" : "#323130",
+                  }}
+                />
+              </ListItemIcon>
+              <ListItemText
+                primary="Admin"
+                primaryTypographyProps={{
+                  fontSize: "13px",
+                  fontWeight: pathname === "/admin" ? 600 : 500,
+                  color: pathname === "/admin" ? "#0078D4" : "inherit",
                 }}
               />
             </ListItemButton>
