@@ -18,7 +18,7 @@ import {
   ExpandLess,
   ExpandMore,
   AdminPanelSettings,
-  FolderOutlined,
+  DashboardCustomize,
 } from "@mui/icons-material";
 
 const drawerWidth = 260;
@@ -137,7 +137,7 @@ export default function Sidebar() {
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <FolderOutlined
+                    <DashboardCustomize
                       sx={{
                         fontSize: 16,
                         color: pathname === "/projects" ? "#0078D4" : "#605E5C",
