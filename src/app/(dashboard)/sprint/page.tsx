@@ -21,6 +21,7 @@ import {
   StarBorder,
   People,
   Add,
+  DashboardCustomize,
   ViewWeek,
   MenuBook,
   PlayArrow,
@@ -45,6 +46,7 @@ import TaskCard from "@/components/sprint/TaskCard";
 import TaskDetailsDialog from "@/components/sprint/TaskDetailsDialog";
 import UserStoryDialog from "@/components/sprint/UserStoryDialog";
 import SprintDialog from "@/components/sprint/SprintDialog";
+import AddProjectDialog from "@/components/sprint/AddProjectDialog";
 import { useUsers } from "@/hooks/useUsers";
 import PersonIcon from "@mui/icons-material/Person";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
@@ -81,6 +83,7 @@ export default function SprintPage() {
   );
   const [sprintDialogOpen, setSprintDialogOpen] = useState(false);
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
+  const [addProjectDialogOpen, setAddProjectDialogOpen] = useState(false);
   const [storyMenuAnchor, setStoryMenuAnchor] = useState<null | HTMLElement>(
     null,
   );
@@ -540,6 +543,16 @@ export default function SprintPage() {
                 >
                   <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
                   Add Sprint
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setNewWorkItemAnchor(null);
+                    setAddProjectDialogOpen(true);
+                  }}
+                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                >
+                  <DashboardCustomize sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add Project
                 </MenuItem>
               </Menu>
             </PermissionGate>
@@ -1082,6 +1095,10 @@ export default function SprintPage() {
         onConfirm={handleDeleteStory}
         itemType="User Story"
         itemName={userStories.find((s) => s.id === pendingDeleteStoryId)?.title}
+      />
+      <AddProjectDialog
+        open={addProjectDialogOpen}
+        onClose={() => setAddProjectDialogOpen(false)}
       />
     </Box>
   );
