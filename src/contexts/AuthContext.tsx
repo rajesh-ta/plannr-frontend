@@ -29,7 +29,7 @@ export interface AuthContextValue {
     name: string,
     email: string,
     password: string,
-    role?: string,
+    role_id?: string,
   ) => Promise<void>;
   googleSignIn: (credential: string) => Promise<void>;
   logout: () => void;
@@ -105,8 +105,8 @@ export function useAuth(): AuthContextValue {
   );
 
   const register = useCallback(
-    async (name: string, email: string, password: string, role = "member") => {
-      const res = await authApi.register({ name, email, password, role });
+    async (name: string, email: string, password: string, role_id?: string) => {
+      const res = await authApi.register({ name, email, password, role_id });
       applyToken(res.access_token, res.user);
     },
     [applyToken],

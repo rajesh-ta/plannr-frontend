@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -19,21 +19,33 @@ import { GoogleLogin } from "@react-oauth/google";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-
-const ROLES = ["member", "admin", "manager", "developer", "qa"];
+import { rolesApi, Role } from "@/services/api/roles";
 
 export default function SignupPage() {
   const { register, googleSignIn } = useAuth();
   const router = useRouter();
 
+  const [roles, setRoles] = useState<Role[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [role, setRole] = useState("member");
+  const [roleId, setRoleId] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Fetch available roles on mount (public endpoint — no auth needed)
+  useEffect(() => {
+    rolesApi.getAll().then((data) => {
+      setRoles(data);
+      if (data.length > 0) {
+        // Default to PROJECT_DEVELOPER if available, else first role
+        const dev = data.find((r) => r.role_name === "PROJECT_DEVELOPER");
+        setRoleId(dev ? dev.id : data[0].id);
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +62,7 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      await register(name, email, password, role);
+      await register(name, email, password, roleId);
       router.replace("/overview");
     } catch (err: unknown) {
       const msg =
@@ -167,16 +179,17 @@ export default function SignupPage() {
           <TextField
             select
             label="Role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
+            value={roleId}
+            onChange={(e) => setRoleId(e.target.value)}
             fullWidth
             size="small"
             InputLabelProps={{ sx: { color: "grey.500" } }}
             sx={{ "& .MuiOutlinedInput-root": { color: "white" } }}
           >
-            {ROLES.map((r) => (
-              <MenuItem key={r} value={r} sx={{ textTransform: "capitalize" }}>
-                {r.charAt(0).toUpperCase() + r.slice(1)}
+            {roles.map((r) => (
+              <MenuItem key={r.id} value={r.id}>
+                {r.role_name.replace("PROJECT_", "").charAt(0).toUpperCase() +
+                  r.role_name.replace("PROJECT_", "").slice(1).toLowerCase()}
               </MenuItem>
             ))}
           </TextField>

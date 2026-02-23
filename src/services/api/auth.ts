@@ -27,7 +27,7 @@ export const authApi = {
     name: string;
     email: string;
     password: string;
-    role?: string;
+    role_id?: string;
   }): Promise<AuthResponse> => {
     const { data } = await apiClient.post<AuthResponse>(
       "/auth/register",
