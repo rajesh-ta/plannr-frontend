@@ -34,6 +34,11 @@ export interface TaskCreatePayload {
 }
 
 export const tasksApi = {
+  getAll: async () => {
+    const response = await apiClient.get<Task[]>(`/tasks`);
+    return response.data;
+  },
+
   getByUserStoryId: async (userStoryId: string) => {
     const response = await apiClient.get<Task[]>(
       `/tasks/user-story/${userStoryId}`,
