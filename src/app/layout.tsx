@@ -5,6 +5,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import theme from "@/theme/theme";
 import QueryProvider from "@/components/providers/QueryProvider";
+import ReduxProvider from "@/components/providers/ReduxProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -36,14 +37,16 @@ export default function RootLayout({
         <GoogleOAuthProvider
           clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ""}
         >
-          <QueryProvider>
-            <AppRouterCacheProvider>
-              <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <AuthProvider>{children}</AuthProvider>
-              </ThemeProvider>
-            </AppRouterCacheProvider>
-          </QueryProvider>
+          <ReduxProvider>
+            <QueryProvider>
+              <AppRouterCacheProvider>
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <AuthProvider>{children}</AuthProvider>
+                </ThemeProvider>
+              </AppRouterCacheProvider>
+            </QueryProvider>
+          </ReduxProvider>
         </GoogleOAuthProvider>
       </body>
     </html>

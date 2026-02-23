@@ -19,6 +19,8 @@ interface UserRoleCellProps {
   roles: Role[];
   editing: EditingState | null;
   saving: boolean;
+  /** When false the inline edit pencil is hidden (read-only view). */
+  canEdit?: boolean;
   onStartEdit: (
     userId: string,
     field: "role" | "status",
@@ -35,6 +37,7 @@ export default function UserRoleCell({
   roles,
   editing,
   saving,
+  canEdit = true,
   onStartEdit,
   onChangeEdit,
   onCommit,
@@ -88,14 +91,16 @@ export default function UserRoleCell({
           border: `1px solid ${ROLE_COLORS[displayRole] ?? "#EDEBE9"}`,
         }}
       />
-      <Tooltip title="Edit role">
-        <IconButton
-          size="small"
-          onClick={() => onStartEdit(userId, "role", displayRole)}
-        >
-          <Edit sx={{ fontSize: 14, color: "#605E5C" }} />
-        </IconButton>
-      </Tooltip>
+      {canEdit && (
+        <Tooltip title="Edit role">
+          <IconButton
+            size="small"
+            onClick={() => onStartEdit(userId, "role", displayRole)}
+          >
+            <Edit sx={{ fontSize: 14, color: "#605E5C" }} />
+          </IconButton>
+        </Tooltip>
+      )}
     </Stack>
   );
 }

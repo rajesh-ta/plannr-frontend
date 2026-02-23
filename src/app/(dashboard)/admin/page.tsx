@@ -1,14 +1,21 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Box, CircularProgress, Alert } from "@mui/material";
 import { usersApi, User } from "@/services/api/users";
 import { rolesApi, Role } from "@/services/api/roles";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminStats from "@/components/admin/AdminStats";
 import UsersDataGrid from "@/components/admin/UsersDataGrid";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useAppSelector } from "@/store/hooks";
 
 export default function AdminPage() {
+  const router = useRouter();
+  const { can } = usePermissions();
+  const authLoading = useAppSelector((s) => s.auth.loading);
+
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +25,13 @@ export default function AdminPage() {
   const [modifierNames, setModifierNames] = useState<Record<string, string>>(
     {},
   );
+
+  // Redirect to /overview if the user lacks admin:read — wait until auth resolves
+  useEffect(() => {
+    if (!authLoading && !can("admin:read")) {
+      router.replace("/overview");
+    }
+  }, [authLoading, can, router]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -49,10 +63,13 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // Don't fetch until we know the user has access
+    if (!authLoading && can("admin:read")) {
+      fetchData();
+    }
+  }, [authLoading, can, fetchData]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <Box
         display="flex"
@@ -92,6 +109,7 @@ export default function AdminPage() {
           modifierNames={modifierNames}
           onRefresh={fetchData}
           onError={setError}
+          canWrite={can("admin:write")}
         />
       </Box>
     </Box>

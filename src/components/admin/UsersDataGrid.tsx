@@ -21,6 +21,8 @@ interface UsersDataGridProps {
   modifierNames: Record<string, string>;
   onRefresh: () => Promise<void>;
   onError: (msg: string) => void;
+  /** When false, all inline edit controls (role / status) are hidden. */
+  canWrite?: boolean;
 }
 
 export default function UsersDataGrid({
@@ -29,6 +31,7 @@ export default function UsersDataGrid({
   modifierNames,
   onRefresh,
   onError,
+  canWrite = true,
 }: UsersDataGridProps) {
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [saving, setSaving] = useState(false);
@@ -117,6 +120,7 @@ export default function UsersDataGrid({
             roles={roles}
             editing={editing}
             saving={saving}
+            canEdit={canWrite}
             onStartEdit={startEdit}
             onChangeEdit={changeEdit}
             onCommit={commitEdit}
@@ -137,6 +141,7 @@ export default function UsersDataGrid({
             status={(params.row as User).status}
             editing={editing}
             saving={saving}
+            canEdit={canWrite}
             onStartEdit={startEdit}
             onChangeEdit={changeEdit}
             onCommit={commitEdit}

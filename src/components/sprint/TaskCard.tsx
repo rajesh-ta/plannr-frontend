@@ -16,6 +16,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { getTaskStatusStyle } from "@/constants/statusColors";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
+import PermissionGate from "@/components/common/PermissionGate";
 import { Task } from "@/services/api/tasks";
 import { useUserById } from "@/hooks/useUsers";
 
@@ -275,18 +276,20 @@ export default function TaskCard({
           <EditOutlinedIcon sx={{ fontSize: 18 }} />
           Edit
         </MenuItem>
-        <MenuItem
-          onClick={handleDelete}
-          sx={{
-            fontSize: "13px",
-            py: 1,
-            gap: 1.5,
-            color: "#A4262C",
-          }}
-        >
-          <DeleteOutlineIcon sx={{ fontSize: 18 }} />
-          Delete
-        </MenuItem>
+        <PermissionGate action="task:write">
+          <MenuItem
+            onClick={handleDelete}
+            sx={{
+              fontSize: "13px",
+              py: 1,
+              gap: 1.5,
+              color: "#A4262C",
+            }}
+          >
+            <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+            Delete
+          </MenuItem>
+        </PermissionGate>
       </Menu>
     </Box>
   );

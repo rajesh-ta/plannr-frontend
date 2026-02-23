@@ -4,10 +4,16 @@ export interface UserOut {
   id: string;
   name: string;
   email: string;
-  role: string;
-  avatar_url?: string;
+  role_id: string | null;
+  role_name: string | null;
+  status: string;
+  last_modified_on: string | null;
+  last_modified_by: string | null;
+  avatar_url: string | null;
   auth_provider: string;
   created_at: string;
+  /** All 12 permission keys, each True if the user's role grants it. */
+  permissions: Record<string, boolean>;
 }
 
 export interface AuthResponse {

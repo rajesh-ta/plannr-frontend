@@ -49,6 +49,7 @@ import { useUsers } from "@/hooks/useUsers";
 import PersonIcon from "@mui/icons-material/Person";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import PermissionGate from "@/components/common/PermissionGate";
 
 export default function SprintPage() {
   const { selectedProjectId, selectedSprintId, setSelectedSprintId } =
@@ -489,54 +490,59 @@ export default function SprintPage() {
             </IconButton>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={(e) => setNewWorkItemAnchor(e.currentTarget)}
-              sx={{
-                bgcolor: "#0078D4",
-                textTransform: "none",
-                fontSize: "14px",
-                fontWeight: 600,
-                "&:hover": {
-                  bgcolor: "#106EBE",
-                },
-              }}
-            >
-              New Work Item
-            </Button>
-            <Menu
-              anchorEl={newWorkItemAnchor}
-              open={Boolean(newWorkItemAnchor)}
-              onClose={() => setNewWorkItemAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-              transformOrigin={{ vertical: "top", horizontal: "left" }}
-              PaperProps={{
-                sx: { boxShadow: "0 2px 8px rgba(0,0,0,0.15)", minWidth: 200 },
-              }}
-            >
-              <MenuItem
-                onClick={() => {
-                  setNewWorkItemAnchor(null);
-                  setUserStoryDialogOpen(true);
+            <PermissionGate action="story:write">
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={(e) => setNewWorkItemAnchor(e.currentTarget)}
+                sx={{
+                  bgcolor: "#0078D4",
+                  textTransform: "none",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  "&:hover": {
+                    bgcolor: "#106EBE",
+                  },
                 }}
-                sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
               >
-                <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
-                Add User Story
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  setNewWorkItemAnchor(null);
-                  setEditingSprint(null);
-                  setSprintDialogOpen(true);
+                New Work Item
+              </Button>
+              <Menu
+                anchorEl={newWorkItemAnchor}
+                open={Boolean(newWorkItemAnchor)}
+                onClose={() => setNewWorkItemAnchor(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                transformOrigin={{ vertical: "top", horizontal: "left" }}
+                PaperProps={{
+                  sx: {
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    minWidth: 200,
+                  },
                 }}
-                sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
               >
-                <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
-                Add Sprint
-              </MenuItem>
-            </Menu>
+                <MenuItem
+                  onClick={() => {
+                    setNewWorkItemAnchor(null);
+                    setUserStoryDialogOpen(true);
+                  }}
+                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                >
+                  <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add User Story
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setNewWorkItemAnchor(null);
+                    setEditingSprint(null);
+                    setSprintDialogOpen(true);
+                  }}
+                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                >
+                  <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add Sprint
+                </MenuItem>
+              </Menu>
+            </PermissionGate>
             <Button
               variant="outlined"
               startIcon={<ViewWeek />}
@@ -745,19 +751,21 @@ export default function SprintPage() {
                         </Box>
 
                         {/* Three-dot menu button */}
-                        <IconButton
-                          className="story-menu-btn"
-                          size="small"
-                          onClick={(e) => handleStoryMenuOpen(e, story.id)}
-                          sx={{
-                            opacity: 0,
-                            transition: "opacity 0.15s ease",
-                            p: 0.25,
-                            flexShrink: 0,
-                          }}
-                        >
-                          <MoreVert sx={{ fontSize: 16 }} />
-                        </IconButton>
+                        <PermissionGate action="story:write">
+                          <IconButton
+                            className="story-menu-btn"
+                            size="small"
+                            onClick={(e) => handleStoryMenuOpen(e, story.id)}
+                            sx={{
+                              opacity: 0,
+                              transition: "opacity 0.15s ease",
+                              p: 0.25,
+                              flexShrink: 0,
+                            }}
+                          >
+                            <MoreVert sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </PermissionGate>
 
                         {/* Story Actions Menu */}
                         <Menu
@@ -784,24 +792,26 @@ export default function SprintPage() {
                             },
                           }}
                         >
-                          <MenuItem
-                            onClick={handleEditStory}
-                            sx={{ fontSize: "13px", gap: 1 }}
-                          >
-                            <Edit sx={{ fontSize: 15, color: "#605E5C" }} />
-                            Edit
-                          </MenuItem>
-                          <MenuItem
-                            onClick={handleDeleteStoryRequest}
-                            sx={{
-                              fontSize: "13px",
-                              gap: 1,
-                              color: "#D13438",
-                            }}
-                          >
-                            <Delete sx={{ fontSize: 15 }} />
-                            Delete
-                          </MenuItem>
+                          <PermissionGate action="story:write">
+                            <MenuItem
+                              onClick={handleEditStory}
+                              sx={{ fontSize: "13px", gap: 1 }}
+                            >
+                              <Edit sx={{ fontSize: 15, color: "#605E5C" }} />
+                              Edit
+                            </MenuItem>
+                            <MenuItem
+                              onClick={handleDeleteStoryRequest}
+                              sx={{
+                                fontSize: "13px",
+                                gap: 1,
+                                color: "#D13438",
+                              }}
+                            >
+                              <Delete sx={{ fontSize: 15 }} />
+                              Delete
+                            </MenuItem>
+                          </PermissionGate>
                         </Menu>
                       </Box>
 
@@ -867,26 +877,28 @@ export default function SprintPage() {
                                 fontWeight: 500,
                               }}
                             />
-                            <Button
-                              startIcon={
-                                <Add sx={{ fontSize: "12px !important" }} />
-                              }
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddTask(story.id);
-                              }}
-                              sx={{
-                                textTransform: "none",
-                                fontSize: "11px",
-                                minHeight: 18,
-                                height: 20,
-                                py: 0,
-                                color: "#7B2FBE",
-                              }}
-                            >
-                              Add Task
-                            </Button>
+                            <PermissionGate action="task:write">
+                              <Button
+                                startIcon={
+                                  <Add sx={{ fontSize: "12px !important" }} />
+                                }
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddTask(story.id);
+                                }}
+                                sx={{
+                                  textTransform: "none",
+                                  fontSize: "11px",
+                                  minHeight: 18,
+                                  height: 20,
+                                  py: 0,
+                                  color: "#7B2FBE",
+                                }}
+                              >
+                                Add Task
+                              </Button>
+                            </PermissionGate>
                           </Box>
 
                           {/* Assignee */}

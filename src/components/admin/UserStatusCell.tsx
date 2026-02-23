@@ -17,6 +17,8 @@ interface UserStatusCellProps {
   status: string;
   editing: EditingState | null;
   saving: boolean;
+  /** When false the inline edit pencil is hidden (read-only view). */
+  canEdit?: boolean;
   onStartEdit: (
     userId: string,
     field: "role" | "status",
@@ -32,6 +34,7 @@ export default function UserStatusCell({
   status,
   editing,
   saving,
+  canEdit = true,
   onStartEdit,
   onChangeEdit,
   onCommit,
@@ -80,14 +83,16 @@ export default function UserStatusCell({
         variant="outlined"
         sx={{ fontSize: "11px", fontWeight: 600 }}
       />
-      <Tooltip title="Edit status">
-        <IconButton
-          size="small"
-          onClick={() => onStartEdit(userId, "status", status)}
-        >
-          <Edit sx={{ fontSize: 14, color: "#605E5C" }} />
-        </IconButton>
-      </Tooltip>
+      {canEdit && (
+        <Tooltip title="Edit status">
+          <IconButton
+            size="small"
+            onClick={() => onStartEdit(userId, "status", status)}
+          >
+            <Edit sx={{ fontSize: 14, color: "#605E5C" }} />
+          </IconButton>
+        </Tooltip>
+      )}
     </Stack>
   );
 }
