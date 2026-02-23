@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useProject } from "@/contexts/ProjectContext";
 import { projectsApi, Project } from "@/services/api/projects";
 import {
@@ -64,6 +64,9 @@ export function useProjectsData() {
 
   const { data: users = [] } = useUsers();
 
+  // Holds a sprint ID to select after a project-switch triggered re-fetch
+  const pendingSprintIdRef = useRef<string | null>(null);
+
   // ── Fetch projects on mount ────────────────────────────────────────────
   useEffect(() => {
     const fetchProjects = async () => {
@@ -91,7 +94,13 @@ export function useProjectsData() {
         setLoadingSprints(true);
         const data = await sprintsApi.getByProjectId(selectedProjectId);
         setSprints(data);
-        setSelectedSprintId(data.length > 0 ? data[0].id : "");
+        // If we're expecting a specific sprint (e.g. just created for this project)
+        const pendingId = pendingSprintIdRef.current;
+        pendingSprintIdRef.current = null;
+        const targetSprint = pendingId && data.find((s) => s.id === pendingId);
+        setSelectedSprintId(
+          targetSprint ? pendingId! : data.length > 0 ? data[0].id : "",
+        );
       } catch (error) {
         console.error("Failed to fetch sprints:", error);
         setSprints([]);
@@ -330,8 +339,16 @@ export function useProjectsData() {
   // ── Sprint handler ────────────────────────────────────────────────────
   const handleSaveSprint = async (payload: SprintCreatePayload) => {
     const created = await sprintsApi.create(payload);
-    setSprints((prev) => [...prev, created]);
-    setSelectedSprintId(created.id);
+    if (payload.project_id !== selectedProjectId) {
+      // Sprint belongs to a different project — switch the project selection.
+      // The fetchSprints effect will re-run; pendingSprintIdRef tells it which
+      // sprint to auto-select once the new list is loaded.
+      pendingSprintIdRef.current = created.id;
+      setSelectedProjectId(payload.project_id);
+    } else {
+      setSprints((prev) => [...prev, created]);
+      setSelectedSprintId(created.id);
+    }
   };
 
   // ── Project refresh (after add project) ──────────────────────────────
