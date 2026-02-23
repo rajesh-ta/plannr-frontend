@@ -7,7 +7,6 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -19,13 +18,12 @@ import { GoogleLogin } from "@react-oauth/google";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { rolesApi, Role } from "@/services/api/roles";
+import { rolesApi } from "@/services/api/roles";
 
 export default function SignupPage() {
   const { register, googleSignIn } = useAuth();
   const router = useRouter();
 
-  const [roles, setRoles] = useState<Role[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,15 +33,11 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch available roles on mount (public endpoint — no auth needed)
+  // Fetch roles on mount to resolve PROJECT_VIEWER id
   useEffect(() => {
     rolesApi.getAll().then((data) => {
-      setRoles(data);
-      if (data.length > 0) {
-        // Default to PROJECT_DEVELOPER if available, else first role
-        const dev = data.find((r) => r.role_name === "PROJECT_DEVELOPER");
-        setRoleId(dev ? dev.id : data[0].id);
-      }
+      const viewer = data.find((r) => r.role_name === "PROJECT_VIEWER");
+      if (viewer) setRoleId(viewer.id);
     });
   }, []);
 
@@ -177,24 +171,6 @@ export default function SignupPage() {
           />
 
           <TextField
-            select
-            label="Role"
-            value={roleId}
-            onChange={(e) => setRoleId(e.target.value)}
-            fullWidth
-            size="small"
-            InputLabelProps={{ sx: { color: "grey.500" } }}
-            sx={{ "& .MuiOutlinedInput-root": { color: "white" } }}
-          >
-            {roles.map((r) => (
-              <MenuItem key={r.id} value={r.id}>
-                {r.role_name.replace("PROJECT_", "").charAt(0).toUpperCase() +
-                  r.role_name.replace("PROJECT_", "").slice(1).toLowerCase()}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
             label="Password"
             type={showPassword ? "text" : "password"}
             value={password}
@@ -204,6 +180,7 @@ export default function SignupPage() {
             autoComplete="new-password"
             size="small"
             helperText="Minimum 8 characters"
+            FormHelperTextProps={{ sx: { color: "grey.500" } }}
             InputLabelProps={{ sx: { color: "grey.500" } }}
             sx={{ "& .MuiOutlinedInput-root": { color: "white" } }}
             InputProps={{

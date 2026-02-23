@@ -56,21 +56,29 @@ export default function AppHeader() {
     >
       <Toolbar sx={{ minHeight: "48px !important", px: 2 }}>
         {/* App Name */}
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1, flexGrow: 1 }}
-        >
-          <GridView sx={{ fontSize: 20, color: "white" }} />
-          <Typography
-            variant="h6"
-            component="div"
+        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+          <Box
+            onClick={() => router.push("/overview")}
             sx={{
-              fontWeight: 600,
-              fontSize: "18px",
-              color: "white",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              cursor: "pointer",
             }}
           >
-            Plannr
-          </Typography>
+            <GridView sx={{ fontSize: 20, color: "white" }} />
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{
+                fontWeight: 600,
+                fontSize: "18px",
+                color: "white",
+              }}
+            >
+              Plannr
+            </Typography>
+          </Box>
         </Box>
 
         {/* Right side icons */}
