@@ -31,6 +31,7 @@ import {
   DirectionsRun,
 } from "@mui/icons-material";
 import { useProject } from "@/contexts/ProjectContext";
+import { projectsApi, Project } from "@/services/api/projects";
 import {
   sprintsApi,
   Sprint,
@@ -56,6 +57,7 @@ import PermissionGate from "@/components/common/PermissionGate";
 export default function SprintPage() {
   const { selectedProjectId, selectedSprintId, setSelectedSprintId } =
     useProject();
+  const [projects, setProjects] = useState<Project[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [loadingSprints, setLoadingSprints] = useState(false);
   const [userStories, setUserStories] = useState<UserStory[]>([]);
@@ -95,6 +97,10 @@ export default function SprintPage() {
 
   // Fetch users using React Query
   const { data: users = [] } = useUsers();
+
+  useEffect(() => {
+    projectsApi.getAll().then(setProjects).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const fetchSprints = async () => {
@@ -1086,6 +1092,7 @@ export default function SprintPage() {
           setEditingSprint(null);
         }}
         projectId={selectedProjectId || ""}
+        projects={projects}
         editSprint={editingSprint}
         onSave={handleSaveSprint}
       />

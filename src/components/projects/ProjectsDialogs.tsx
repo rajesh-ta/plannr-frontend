@@ -6,6 +6,7 @@ import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { Task } from "@/services/api/tasks";
 import { UserStory, UserStoryCreatePayload } from "@/services/api/userStories";
 import { Sprint, SprintCreatePayload } from "@/services/api/sprints";
+import { Project } from "@/services/api/projects";
 
 interface ProjectsDialogsProps {
   // Task dialog
@@ -30,6 +31,7 @@ interface ProjectsDialogsProps {
   sprintDialogOpen: boolean;
   editingSprint: Sprint | null;
   selectedProjectId: string;
+  projects: Project[];
   onCloseSprintDialog: () => void;
   onSaveSprint: (payload: SprintCreatePayload, id?: string) => Promise<void>;
 
@@ -61,6 +63,7 @@ export default function ProjectsDialogs({
   sprintDialogOpen,
   editingSprint,
   selectedProjectId,
+  projects,
   onCloseSprintDialog,
   onSaveSprint,
   deleteStoryConfirmOpen,
@@ -95,6 +98,7 @@ export default function ProjectsDialogs({
         open={sprintDialogOpen}
         onClose={onCloseSprintDialog}
         projectId={selectedProjectId}
+        projects={projects}
         editSprint={editingSprint}
         onSave={onSaveSprint}
       />

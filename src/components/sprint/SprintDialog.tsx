@@ -19,11 +19,13 @@ import {
 } from "@mui/material";
 import { Close, DirectionsRun } from "@mui/icons-material";
 import { Sprint, SprintCreatePayload } from "@/services/api/sprints";
+import { Project } from "@/services/api/projects";
 
 interface SprintDialogProps {
   open: boolean;
   onClose: () => void;
   projectId: string;
+  projects?: Project[];
   editSprint?: Sprint | null;
   onSave: (payload: SprintCreatePayload, id?: string) => Promise<void>;
 }
@@ -34,6 +36,7 @@ export default function SprintDialog({
   open,
   onClose,
   projectId,
+  projects = [],
   editSprint,
   onSave,
 }: SprintDialogProps) {
@@ -43,7 +46,8 @@ export default function SprintDialog({
   const [status, setStatus] = useState("planned");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [errors, setErrors] = useState({ name: false });
+  const [selectedProject, setSelectedProject] = useState(projectId);
+  const [errors, setErrors] = useState({ name: false, project: false });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -53,28 +57,30 @@ export default function SprintDialog({
         setStatus(editSprint.status);
         setStartDate(editSprint.start_date || "");
         setEndDate(editSprint.end_date || "");
+        setSelectedProject(editSprint.project_id);
       } else {
         setName("");
         setStatus("planned");
         setStartDate("");
         setEndDate("");
+        setSelectedProject(projectId);
       }
-      setErrors({ name: false });
+      setErrors({ name: false, project: false });
       setSaving(false);
     }
-  }, [open, editSprint]);
+  }, [open, editSprint, projectId]);
 
   const handleSave = async () => {
-    const newErrors = { name: !name.trim() };
+    const newErrors = { name: !name.trim(), project: !selectedProject };
     setErrors(newErrors);
-    if (newErrors.name) return;
+    if (newErrors.name || newErrors.project) return;
 
     setSaving(true);
     try {
       await onSave(
         {
           name: name.trim(),
-          project_id: projectId,
+          project_id: selectedProject,
           status,
           start_date: startDate || undefined,
           end_date: endDate || undefined,
@@ -131,6 +137,34 @@ export default function SprintDialog({
 
       <DialogContent sx={{ pt: 3 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {/* Project */}
+          {projects.length > 0 && (
+            <FormControl fullWidth size="small" error={errors.project} required>
+              <InputLabel>Project</InputLabel>
+              <Select
+                value={selectedProject}
+                label="Project"
+                onChange={(e) => setSelectedProject(e.target.value)}
+                disabled={isEdit}
+              >
+                {projects.map((p) => (
+                  <MenuItem key={p.id} value={p.id}>
+                    {p.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.project && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, ml: 1.5 }}
+                >
+                  Project is required
+                </Typography>
+              )}
+            </FormControl>
+          )}
+
           {/* Name */}
           <TextField
             label="Sprint Name"

@@ -77,6 +77,7 @@ export default function ProjectsPage() {
         sprintDialogOpen={d.sprintDialogOpen}
         editingSprint={d.editingSprint}
         selectedProjectId={d.selectedProjectId}
+        projects={d.projects}
         onCloseSprintDialog={() => {
           d.setSprintDialogOpen(false);
           d.setEditingSprint(null);
