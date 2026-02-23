@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useAppSelector } from "@/store/hooks";
 
 /**
@@ -16,8 +17,13 @@ export function usePermissions() {
   /**
    * Returns `true` when the logged-in user's role grants `action`.
    * Safely returns `false` when the user is not yet loaded.
+   * Memoized so its reference only changes when `permissions` changes,
+   * preventing unnecessary effect re-runs in consumers.
    */
-  const can = (action: string): boolean => permissions[action] === true;
+  const can = useCallback(
+    (action: string): boolean => permissions[action] === true,
+    [permissions],
+  );
 
   return { can, permissions };
 }
