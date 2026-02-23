@@ -488,13 +488,6 @@ export default function ProjectsPage() {
                 )}
               </Select>
             </FormControl>
-
-            <IconButton size="small">
-              <StarBorder sx={{ fontSize: 20 }} />
-            </IconButton>
-            <IconButton size="small">
-              <People sx={{ fontSize: 20 }} />
-            </IconButton>
           </Box>
 
           {/* Right: Actions */}
@@ -550,25 +543,12 @@ export default function ProjectsPage() {
                 </MenuItem>
               </Menu>
             </PermissionGate>
-            <Button
-              variant="outlined"
-              startIcon={<ViewWeek />}
-              sx={{
-                textTransform: "none",
-                fontSize: "14px",
-                borderColor: "#8A8886",
-                color: "#323130",
-                "&:hover": { borderColor: "#323130", bgcolor: "#F3F2F1" },
-              }}
-            >
-              Column Options
-            </Button>
           </Box>
         </Box>
       </Box>
 
       {/* ── Filters ──────────────────────────────────────────────────────── */}
-      <Box
+      {/* <Box
         sx={{
           bgcolor: "white",
           borderBottom: "1px solid #EDEBE9",
@@ -591,7 +571,7 @@ export default function ProjectsPage() {
         <Typography sx={{ fontSize: "13px", color: "#605E5C" }}>
           10 work days
         </Typography>
-      </Box>
+      </Box> */}
 
       {/* ── Board ────────────────────────────────────────────────────────── */}
       <Box sx={{ px: 3, py: 2 }}>
