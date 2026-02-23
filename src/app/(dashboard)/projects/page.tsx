@@ -523,12 +523,12 @@ export default function ProjectsPage() {
                 <MenuItem
                   onClick={() => {
                     setNewWorkItemAnchor(null);
-                    setUserStoryDialogOpen(true);
+                    setAddProjectDialogOpen(true);
                   }}
                   sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
                 >
-                  <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
-                  Add User Story
+                  <DashboardCustomize sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add Project
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
@@ -544,12 +544,12 @@ export default function ProjectsPage() {
                 <MenuItem
                   onClick={() => {
                     setNewWorkItemAnchor(null);
-                    setAddProjectDialogOpen(true);
+                    setUserStoryDialogOpen(true);
                   }}
                   sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
                 >
-                  <DashboardCustomize sx={{ fontSize: 18, color: "#0078D4" }} />
-                  Add Project
+                  <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add User Story
                 </MenuItem>
               </Menu>
             </PermissionGate>

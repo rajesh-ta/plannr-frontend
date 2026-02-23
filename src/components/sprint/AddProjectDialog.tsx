@@ -56,7 +56,6 @@ export default function AddProjectDialog({
       const payload: ProjectCreatePayload = {
         name: name.trim(),
         description: description.trim(),
-        created_by: user.id,
       };
       await projectsApi.create(payload);
       onCreated?.();

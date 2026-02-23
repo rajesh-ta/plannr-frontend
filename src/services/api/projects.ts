@@ -4,14 +4,12 @@ export interface Project {
   id: string;
   name: string;
   description?: string;
-  created_by: string;
   created_at: string;
 }
 
 export interface ProjectCreatePayload {
   name: string;
   description: string;
-  created_by: string;
 }
 
 export const projectsApi = {
