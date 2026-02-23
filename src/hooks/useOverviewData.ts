@@ -13,6 +13,9 @@ export function useOverviewData() {
   const { data: allTasks = [], isLoading } = useQuery({
     queryKey: ["tasks"],
     queryFn: tasksApi.getAll,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   const taskStats: TaskStats = {
