@@ -50,7 +50,7 @@ export default function AppHeader() {
 
         {/* Right side icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton size="small" sx={{ color: "white" }}>
+          {/* <IconButton size="small" sx={{ color: "white" }}>
             <Badge badgeContent={3} color="error">
               <Notifications fontSize="small" />
             </Badge>
@@ -58,7 +58,7 @@ export default function AppHeader() {
 
           <IconButton size="small" sx={{ color: "white" }}>
             <Settings fontSize="small" />
-          </IconButton>
+          </IconButton> */}
 
           <ProfileMenu />
         </Box>
