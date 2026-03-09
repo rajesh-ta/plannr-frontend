@@ -26,6 +26,7 @@ interface TaskDetailsDialogProps {
   task: Task | null;
   userStory?: UserStory;
   onSave?: (updatedTask: Partial<Task>) => void;
+  readOnly?: boolean;
 }
 
 const STATUS_OPTIONS = ["new", "active", "closed", "removed"];
@@ -36,6 +37,7 @@ export default function TaskDetailsDialog({
   task,
   userStory,
   onSave,
+  readOnly = false,
 }: TaskDetailsDialogProps) {
   const { data: users = [] } = useUsers();
   const [title, setTitle] = useState("");
@@ -183,25 +185,39 @@ export default function TaskDetailsDialog({
           <TextField
             label="Title"
             fullWidth
-            required
+            required={!readOnly}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => !readOnly && setTitle(e.target.value)}
             size="small"
-            error={errors.title}
-            helperText={errors.title ? "Title is required" : ""}
+            error={!readOnly && errors.title}
+            helperText={!readOnly && errors.title ? "Title is required" : ""}
+            InputProps={{ readOnly }}
+            sx={
+              readOnly
+                ? { "& .MuiOutlinedInput-root": { bgcolor: "#FAFAFA" } }
+                : {}
+            }
           />
 
           <TextField
             label="Description"
             fullWidth
-            required
+            required={!readOnly}
             multiline
             rows={4}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => !readOnly && setDescription(e.target.value)}
             size="small"
-            error={errors.description}
-            helperText={errors.description ? "Description is required" : ""}
+            error={!readOnly && errors.description}
+            helperText={
+              !readOnly && errors.description ? "Description is required" : ""
+            }
+            InputProps={{ readOnly }}
+            sx={
+              readOnly
+                ? { "& .MuiOutlinedInput-root": { bgcolor: "#FAFAFA" } }
+                : {}
+            }
           />
 
           <FormControl fullWidth size="small">
@@ -209,7 +225,9 @@ export default function TaskDetailsDialog({
             <Select
               value={status}
               label="Status"
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => !readOnly && setStatus(e.target.value)}
+              inputProps={{ readOnly }}
+              sx={readOnly ? { bgcolor: "#FAFAFA", pointerEvents: "none" } : {}}
             >
               {STATUS_OPTIONS.map((option) => (
                 <MenuItem key={option} value={option}>
@@ -224,7 +242,9 @@ export default function TaskDetailsDialog({
             <Select
               value={assigneeId}
               label="Assign To"
-              onChange={(e) => setAssigneeId(e.target.value)}
+              onChange={(e) => !readOnly && setAssigneeId(e.target.value)}
+              inputProps={{ readOnly }}
+              sx={readOnly ? { bgcolor: "#FAFAFA", pointerEvents: "none" } : {}}
             >
               <MenuItem value="">
                 <em>Unassigned</em>
@@ -242,11 +262,19 @@ export default function TaskDetailsDialog({
             fullWidth
             type="number"
             value={estimatedHours}
-            onChange={(e) => setEstimatedHours(Number(e.target.value) || 0)}
+            onChange={(e) =>
+              !readOnly && setEstimatedHours(Number(e.target.value) || 0)
+            }
             size="small"
             InputProps={{
+              readOnly,
               inputProps: { min: 0, max: 1000, step: 0.5 },
             }}
+            sx={
+              readOnly
+                ? { "& .MuiOutlinedInput-root": { bgcolor: "#FAFAFA" } }
+                : {}
+            }
           />
         </Box>
       </DialogContent>
@@ -255,11 +283,13 @@ export default function TaskDetailsDialog({
 
       <DialogActions sx={{ p: 2, gap: 1 }}>
         <Button onClick={handleClose} variant="outlined" color="inherit">
-          Cancel
+          {readOnly ? "Close" : "Cancel"}
         </Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
-          {isEditMode ? "Save Changes" : "Add Task"}
-        </Button>
+        {!readOnly && (
+          <Button onClick={handleSave} variant="contained" color="primary">
+            {isEditMode ? "Save Changes" : "Add Task"}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

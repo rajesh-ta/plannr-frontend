@@ -53,10 +53,12 @@ import PersonIcon from "@mui/icons-material/Person";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import PermissionGate from "@/components/common/PermissionGate";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function SprintPage() {
   const { selectedProjectId, selectedSprintId, setSelectedSprintId } =
     useProject();
+  const { can } = usePermissions();
   const [projects, setProjects] = useState<Project[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [loadingSprints, setLoadingSprints] = useState(false);
@@ -1073,6 +1075,7 @@ export default function SprintPage() {
         task={selectedTask}
         userStory={getSelectedUserStory() ?? undefined}
         onSave={handleSaveTask}
+        readOnly={!can("task:write")}
       />
       <UserStoryDialog
         open={userStoryDialogOpen}

@@ -99,24 +99,26 @@ export default function TaskCard({
         },
       }}
     >
-      <IconButton
-        className="more-icon"
-        size="small"
-        onClick={handleMenuClick}
-        sx={{
-          position: "absolute",
-          top: 4,
-          right: 4,
-          opacity: 0,
-          transition: "opacity 0.2s",
-          padding: "4px",
-          "&:hover": {
-            bgcolor: "rgba(0, 0, 0, 0.04)",
-          },
-        }}
-      >
-        <MoreVertIcon sx={{ fontSize: 16 }} />
-      </IconButton>
+      <PermissionGate action="task:write">
+        <IconButton
+          className="more-icon"
+          size="small"
+          onClick={handleMenuClick}
+          sx={{
+            position: "absolute",
+            top: 4,
+            right: 4,
+            opacity: 0,
+            transition: "opacity 0.2s",
+            padding: "4px",
+            "&:hover": {
+              bgcolor: "rgba(0, 0, 0, 0.04)",
+            },
+          }}
+        >
+          <MoreVertIcon sx={{ fontSize: 16 }} />
+        </IconButton>
+      </PermissionGate>
       <Box
         sx={{
           display: "flex",
@@ -265,17 +267,19 @@ export default function TaskCard({
           },
         }}
       >
-        <MenuItem
-          onClick={handleEdit}
-          sx={{
-            fontSize: "13px",
-            py: 1,
-            gap: 1.5,
-          }}
-        >
-          <EditOutlinedIcon sx={{ fontSize: 18 }} />
-          Edit
-        </MenuItem>
+        <PermissionGate action="task:write">
+          <MenuItem
+            onClick={handleEdit}
+            sx={{
+              fontSize: "13px",
+              py: 1,
+              gap: 1.5,
+            }}
+          >
+            <EditOutlinedIcon sx={{ fontSize: 18 }} />
+            Edit
+          </MenuItem>
+        </PermissionGate>
         <PermissionGate action="task:write">
           <MenuItem
             onClick={handleDelete}

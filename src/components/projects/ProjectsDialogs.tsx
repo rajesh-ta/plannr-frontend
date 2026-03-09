@@ -3,6 +3,7 @@ import UserStoryDialog from "@/components/sprint/UserStoryDialog";
 import SprintDialog from "@/components/sprint/SprintDialog";
 import AddProjectDialog from "@/components/sprint/AddProjectDialog";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Task } from "@/services/api/tasks";
 import { UserStory, UserStoryCreatePayload } from "@/services/api/userStories";
 import { Sprint, SprintCreatePayload } from "@/services/api/sprints";
@@ -75,6 +76,7 @@ export default function ProjectsDialogs({
   onCloseAddProject,
   onProjectCreated,
 }: ProjectsDialogsProps) {
+  const { can } = usePermissions();
   return (
     <>
       <TaskDetailsDialog
@@ -83,6 +85,7 @@ export default function ProjectsDialogs({
         task={selectedTask}
         userStory={selectedUserStory}
         onSave={onSaveTask}
+        readOnly={!can("task:write")}
       />
 
       <UserStoryDialog
