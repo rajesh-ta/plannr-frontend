@@ -16,7 +16,7 @@ import {
 } from "@mui/icons-material";
 import { Project } from "@/services/api/projects";
 import { Sprint } from "@/services/api/sprints";
-import PermissionGate from "@/components/common/PermissionGate";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ProjectsToolbarProps {
   projects: Project[];
@@ -49,6 +49,12 @@ export default function ProjectsToolbar({
   onAddSprint,
   onAddUserStory,
 }: ProjectsToolbarProps) {
+  const { can } = usePermissions();
+  const canAddProject = can("project:write");
+  const canAddSprint = can("sprint:write");
+  const canAddStory = can("story:write");
+  const showNewWorkItem = canAddProject || canAddSprint || canAddStory;
+
   const selectSx = {
     fontSize: "14px",
     fontWeight: 600,
@@ -145,54 +151,62 @@ export default function ProjectsToolbar({
         </Box>
 
         {/* Right: New Work Item */}
-        <PermissionGate action="story:write">
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={(e) => setNewWorkItemAnchor(e.currentTarget)}
-            sx={{
-              bgcolor: "#0078D4",
-              textTransform: "none",
-              fontSize: "14px",
-              fontWeight: 600,
-              "&:hover": { bgcolor: "#106EBE" },
-            }}
-          >
-            New Work Item
-          </Button>
-          <Menu
-            anchorEl={newWorkItemAnchor}
-            open={Boolean(newWorkItemAnchor)}
-            onClose={() => setNewWorkItemAnchor(null)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-            transformOrigin={{ vertical: "top", horizontal: "left" }}
-            PaperProps={{
-              sx: { boxShadow: "0 2px 8px rgba(0,0,0,0.15)", minWidth: 200 },
-            }}
-          >
-            <MenuItem
-              onClick={onAddProject}
-              sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+        {showNewWorkItem && (
+          <>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={(e) => setNewWorkItemAnchor(e.currentTarget)}
+              sx={{
+                bgcolor: "#0078D4",
+                textTransform: "none",
+                fontSize: "14px",
+                fontWeight: 600,
+                "&:hover": { bgcolor: "#106EBE" },
+              }}
             >
-              <DashboardCustomize sx={{ fontSize: 18, color: "#0078D4" }} />
-              Add Project
-            </MenuItem>
-            <MenuItem
-              onClick={onAddSprint}
-              sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+              New Work Item
+            </Button>
+            <Menu
+              anchorEl={newWorkItemAnchor}
+              open={Boolean(newWorkItemAnchor)}
+              onClose={() => setNewWorkItemAnchor(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
+              PaperProps={{
+                sx: { boxShadow: "0 2px 8px rgba(0,0,0,0.15)", minWidth: 200 },
+              }}
             >
-              <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
-              Add Sprint
-            </MenuItem>
-            <MenuItem
-              onClick={onAddUserStory}
-              sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
-            >
-              <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
-              Add User Story
-            </MenuItem>
-          </Menu>
-        </PermissionGate>
+              {canAddProject && (
+                <MenuItem
+                  onClick={onAddProject}
+                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                >
+                  <DashboardCustomize sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add Project
+                </MenuItem>
+              )}
+              {canAddSprint && (
+                <MenuItem
+                  onClick={onAddSprint}
+                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                >
+                  <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add Sprint
+                </MenuItem>
+              )}
+              {canAddStory && (
+                <MenuItem
+                  onClick={onAddUserStory}
+                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                >
+                  <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
+                  Add User Story
+                </MenuItem>
+              )}
+            </Menu>
+          </>
+        )}
       </Box>
     </Box>
   );

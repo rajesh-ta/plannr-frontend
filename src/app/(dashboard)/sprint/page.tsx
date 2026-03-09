@@ -501,69 +501,81 @@ export default function SprintPage() {
             </IconButton>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <PermissionGate action="story:write">
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={(e) => setNewWorkItemAnchor(e.currentTarget)}
-                sx={{
-                  bgcolor: "#0078D4",
-                  textTransform: "none",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  "&:hover": {
-                    bgcolor: "#106EBE",
-                  },
-                }}
-              >
-                New Work Item
-              </Button>
-              <Menu
-                anchorEl={newWorkItemAnchor}
-                open={Boolean(newWorkItemAnchor)}
-                onClose={() => setNewWorkItemAnchor(null)}
-                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                transformOrigin={{ vertical: "top", horizontal: "left" }}
-                PaperProps={{
-                  sx: {
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                    minWidth: 200,
-                  },
-                }}
-              >
-                <MenuItem
-                  onClick={() => {
-                    setNewWorkItemAnchor(null);
-                    setUserStoryDialogOpen(true);
+            {(can("story:write") ||
+              can("sprint:write") ||
+              can("project:write")) && (
+              <>
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={(e) => setNewWorkItemAnchor(e.currentTarget)}
+                  sx={{
+                    bgcolor: "#0078D4",
+                    textTransform: "none",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    "&:hover": {
+                      bgcolor: "#106EBE",
+                    },
                   }}
-                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
                 >
-                  <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
-                  Add User Story
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    setNewWorkItemAnchor(null);
-                    setEditingSprint(null);
-                    setSprintDialogOpen(true);
+                  New Work Item
+                </Button>
+                <Menu
+                  anchorEl={newWorkItemAnchor}
+                  open={Boolean(newWorkItemAnchor)}
+                  onClose={() => setNewWorkItemAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                  transformOrigin={{ vertical: "top", horizontal: "left" }}
+                  PaperProps={{
+                    sx: {
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      minWidth: 200,
+                    },
                   }}
-                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
                 >
-                  <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
-                  Add Sprint
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    setNewWorkItemAnchor(null);
-                    setAddProjectDialogOpen(true);
-                  }}
-                  sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
-                >
-                  <DashboardCustomize sx={{ fontSize: 18, color: "#0078D4" }} />
-                  Add Project
-                </MenuItem>
-              </Menu>
-            </PermissionGate>
+                  {can("story:write") && (
+                    <MenuItem
+                      onClick={() => {
+                        setNewWorkItemAnchor(null);
+                        setUserStoryDialogOpen(true);
+                      }}
+                      sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                    >
+                      <MenuBook sx={{ fontSize: 18, color: "#0078D4" }} />
+                      Add User Story
+                    </MenuItem>
+                  )}
+                  {can("sprint:write") && (
+                    <MenuItem
+                      onClick={() => {
+                        setNewWorkItemAnchor(null);
+                        setEditingSprint(null);
+                        setSprintDialogOpen(true);
+                      }}
+                      sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                    >
+                      <DirectionsRun sx={{ fontSize: 18, color: "#0078D4" }} />
+                      Add Sprint
+                    </MenuItem>
+                  )}
+                  {can("project:write") && (
+                    <MenuItem
+                      onClick={() => {
+                        setNewWorkItemAnchor(null);
+                        setAddProjectDialogOpen(true);
+                      }}
+                      sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                    >
+                      <DashboardCustomize
+                        sx={{ fontSize: 18, color: "#0078D4" }}
+                      />
+                      Add Project
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
+            )}
             <Button
               variant="outlined"
               startIcon={<ViewWeek />}
