@@ -13,6 +13,7 @@ import { TaskStats } from "@/hooks/useOverviewData";
 interface CardConfig {
   title: string;
   value: number;
+  total: number;
   icon: React.ReactNode;
   accent: string;
   accentLight: string;
@@ -26,12 +27,15 @@ interface StatCardProps extends CardConfig {
 function StatCard({
   title,
   value,
+  total,
   icon,
   accent,
   accentLight,
   description,
   isLoading,
 }: StatCardProps) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+
   return (
     <Paper
       elevation={0}
@@ -40,107 +44,128 @@ function StatCard({
         overflow: "hidden",
         height: "100%",
         border: "1px solid #EDEBE9",
-        borderTop: `3px solid ${accent}`,
+        borderLeft: `4px solid ${accent}`,
         borderRadius: 2,
-        p: 2.5,
-        background: "#ffffff",
+        p: 1.75,
+        background: `linear-gradient(135deg, #ffffff 60%, ${accent}0a 100%)`,
         transition: "box-shadow 0.18s, transform 0.18s",
         "&:hover": {
-          boxShadow: `0 6px 20px ${accent}28`,
+          boxShadow: `0 8px 24px ${accent}22`,
           transform: "translateY(-2px)",
         },
       }}
     >
-      {/* Dot pattern — fades in from top-right */}
+      {/* Diagonal stripe texture */}
       <Box
         sx={{
           pointerEvents: "none",
           position: "absolute",
-          top: 0,
-          right: 0,
-          width: "70%",
-          height: "100%",
-          backgroundImage: `radial-gradient(circle, ${accent}2e 1.2px, transparent 1.2px)`,
-          backgroundSize: "14px 14px",
-          backgroundPosition: "top right",
+          inset: 0,
+          backgroundImage: `repeating-linear-gradient(
+            -45deg,
+            ${accent}09 0px,
+            ${accent}09 1px,
+            transparent 1px,
+            transparent 12px
+          )`,
           maskImage:
-            "radial-gradient(ellipse 90% 90% at 100% 0%, black 20%, transparent 75%)",
+            "linear-gradient(to bottom-left, black 0%, transparent 55%)",
           WebkitMaskImage:
-            "radial-gradient(ellipse 90% 90% at 100% 0%, black 20%, transparent 75%)",
+            "linear-gradient(to bottom-left, black 0%, transparent 55%)",
         }}
       />
 
-      {/* Decorative hollow rings — bottom-right */}
+      {/* Floating icon — top right */}
       <Box
         sx={{
           pointerEvents: "none",
           position: "absolute",
-          bottom: -30,
-          right: -30,
-          width: 96,
-          height: 96,
-          borderRadius: "50%",
-          border: `14px solid ${accent}18`,
+          top: 14,
+          right: 14,
+          width: 38,
+          height: 38,
+          borderRadius: "10px",
+          bgcolor: accentLight,
+          boxShadow: `0 2px 8px ${accent}30`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1,
         }}
-      />
-      <Box
-        sx={{
-          pointerEvents: "none",
-          position: "absolute",
-          bottom: -14,
-          right: -14,
-          width: 58,
-          height: 58,
-          borderRadius: "50%",
-          border: `8px solid ${accent}12`,
-        }}
-      />
+      >
+        {icon}
+      </Box>
 
       {/* Content */}
       <Box sx={{ position: "relative", zIndex: 1 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2 }}>
-          <Box
-            sx={{
-              width: 38,
-              height: 38,
-              borderRadius: "10px",
-              bgcolor: accentLight,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            {icon}
-          </Box>
-          <Typography
-            variant="body2"
-            sx={{ color: "#605E5C", fontWeight: 600, letterSpacing: 0.1 }}
-          >
-            {title}
-          </Typography>
-        </Box>
+        {/* Label */}
+        <Typography
+          sx={{
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            letterSpacing: 0.8,
+            textTransform: "uppercase",
+            color: "#A19F9D",
+            mb: 1.25,
+          }}
+        >
+          {title}
+        </Typography>
 
+        {/* Hero number */}
         {isLoading ? (
-          <Skeleton variant="text" width={56} height={48} />
+          <Skeleton variant="text" width={64} height={56} />
         ) : (
           <Typography
             sx={{
               fontWeight: 800,
-              fontSize: "2.2rem",
+              fontSize: "2rem",
               lineHeight: 1,
-              mb: 0.75,
               color: accent,
               letterSpacing: -1,
+              mb: 0.5,
             }}
           >
             {value}
           </Typography>
         )}
 
-        <Typography variant="caption" sx={{ color: "#A19F9D" }}>
+        {/* Description */}
+        <Typography
+          variant="caption"
+          sx={{ color: "#A19F9D", display: "block", mb: 1.25 }}
+        >
           {description}
         </Typography>
+
+        {/* Progress bar */}
+        <Box
+          sx={{
+            height: 4,
+            borderRadius: 99,
+            bgcolor: `${accent}18`,
+            overflow: "hidden",
+          }}
+        >
+          {!isLoading && (
+            <Box
+              sx={{
+                height: "100%",
+                width: `${pct}%`,
+                borderRadius: 99,
+                background: `linear-gradient(90deg, ${accent}99, ${accent})`,
+                transition: "width 0.6s ease",
+              }}
+            />
+          )}
+        </Box>
+        {!isLoading && (
+          <Typography
+            sx={{ fontSize: "0.65rem", color: `${accent}bb`, mt: 0.5 }}
+          >
+            {pct}% of total
+          </Typography>
+        )}
       </Box>
     </Paper>
   );
@@ -159,7 +184,8 @@ export default function TaskStatsCards({
     {
       title: "Total Tasks",
       value: stats.total,
-      icon: <Assignment sx={{ fontSize: 18, color: "#605E5C" }} />,
+      total: stats.total,
+      icon: <Assignment sx={{ fontSize: 22, color: "#605E5C" }} />,
       accent: "#605E5C",
       accentLight: "#F3F2F1",
       description: "All tasks across sprints",
@@ -167,7 +193,8 @@ export default function TaskStatsCards({
     {
       title: "New",
       value: stats.new,
-      icon: <FiberNew sx={{ fontSize: 18, color: "#0078D4" }} />,
+      total: stats.total,
+      icon: <FiberNew sx={{ fontSize: 22, color: "#0078D4" }} />,
       accent: "#0078D4",
       accentLight: "#deeffe",
       description: "Not yet started",
@@ -175,7 +202,8 @@ export default function TaskStatsCards({
     {
       title: "Active",
       value: stats.active,
-      icon: <PlayCircleOutline sx={{ fontSize: 18, color: "#8764B8" }} />,
+      total: stats.total,
+      icon: <PlayCircleOutline sx={{ fontSize: 22, color: "#8764B8" }} />,
       accent: "#8764B8",
       accentLight: "#ede7f6",
       description: "Currently in progress",
@@ -183,7 +211,8 @@ export default function TaskStatsCards({
     {
       title: "Closed",
       value: stats.closed,
-      icon: <CheckCircleOutline sx={{ fontSize: 18, color: "#107C10" }} />,
+      total: stats.total,
+      icon: <CheckCircleOutline sx={{ fontSize: 22, color: "#107C10" }} />,
       accent: "#107C10",
       accentLight: "#dff0df",
       description: "Successfully completed",
@@ -191,7 +220,8 @@ export default function TaskStatsCards({
     {
       title: "Removed",
       value: stats.removed,
-      icon: <RemoveCircleOutline sx={{ fontSize: 18, color: "#D13438" }} />,
+      total: stats.total,
+      icon: <RemoveCircleOutline sx={{ fontSize: 22, color: "#D13438" }} />,
       accent: "#D13438",
       accentLight: "#fde7e8",
       description: "Cancelled or removed",
