@@ -1,4 +1,4 @@
-import { Box, Typography, Divider } from "@mui/material";
+﻿import { Box, Typography } from "@mui/material";
 import { CalendarToday } from "@mui/icons-material";
 
 export default function OverviewHeader() {
@@ -10,34 +10,23 @@ export default function OverviewHeader() {
   });
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 1,
-        }}
+    <Box sx={{ mb: 3 }}>
+      <Typography
+        variant="h5"
+        sx={{ fontWeight: 600, color: "#323130", mb: 0.5 }}
       >
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-            Overview
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 1.5 }}>
-            Track your team&apos;s progress across all active sprints. Monitor
-            task statuses, identify blockers, and keep delivery on schedule —
-            all in one place.
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <CalendarToday sx={{ fontSize: 14, color: "text.disabled" }} />
-            <Typography variant="caption" color="text.disabled">
-              {today}
-            </Typography>
-          </Box>
-        </Box>
+        Overview
+      </Typography>
+      <Typography variant="body2" sx={{ color: "#605E5C", mb: 1.5 }}>
+        Track your team&apos;s progress across all active sprints — task
+        statuses, blockers, and delivery at a glance.
+      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+        <CalendarToday sx={{ fontSize: 13, color: "#A19F9D" }} />
+        <Typography variant="caption" sx={{ color: "#A19F9D" }}>
+          {today}
+        </Typography>
       </Box>
-      <Divider sx={{ mt: 2 }} />
     </Box>
   );
 }
