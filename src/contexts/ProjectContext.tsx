@@ -1,38 +1,15 @@
-"use client";
+/**
+ * Compatibility shim — ProjectContext has been migrated to Redux.
+ *
+ *   useProject hook  →  @/hooks/useProject
+ *
+ * Import from that path directly.
+ */
+export { useProject } from "@/hooks/useProject";
+export type { UseProjectReturn } from "@/hooks/useProject";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
-
-interface ProjectContextType {
-  selectedProjectId: string;
-  setSelectedProjectId: (id: string) => void;
-  selectedSprintId: string;
-  setSelectedSprintId: (id: string) => void;
+// ProjectProvider is no longer needed (state lives in Redux).
+// This passthrough keeps any remaining JSX references from breaking.
+export function ProjectProvider({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
-
-const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
-
-export const ProjectProvider = ({ children }: { children: ReactNode }) => {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
-  const [selectedSprintId, setSelectedSprintId] = useState<string>("");
-
-  return (
-    <ProjectContext.Provider
-      value={{
-        selectedProjectId,
-        setSelectedProjectId,
-        selectedSprintId,
-        setSelectedSprintId,
-      }}
-    >
-      {children}
-    </ProjectContext.Provider>
-  );
-};
-
-export const useProject = () => {
-  const context = useContext(ProjectContext);
-  if (context === undefined) {
-    throw new Error("useProject must be used within a ProjectProvider");
-  }
-  return context;
-};

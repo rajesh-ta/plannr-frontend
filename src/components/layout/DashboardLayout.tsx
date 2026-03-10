@@ -5,7 +5,6 @@ import { Box } from "@mui/material";
 import { useRouter } from "next/navigation";
 import AppHeader from "./AppHeader";
 import Sidebar from "./Sidebar";
-import { ProjectProvider } from "@/contexts/ProjectContext";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardLayout({
@@ -28,20 +27,18 @@ export default function DashboardLayout({
   }
 
   return (
-    <ProjectProvider>
-      <Box sx={{ display: "flex", minHeight: "100vh" }}>
-        <AppHeader />
-        <Sidebar />
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            mt: "48px",
-          }}
-        >
-          {children}
-        </Box>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <AppHeader />
+      <Sidebar />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          mt: "48px",
+        }}
+      >
+        {children}
       </Box>
-    </ProjectProvider>
+    </Box>
   );
 }
