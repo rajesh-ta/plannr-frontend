@@ -8,6 +8,7 @@ import QueryProvider from "@/components/providers/QueryProvider";
 import ReduxProvider from "@/components/providers/ReduxProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthProvider from "@/components/providers/AuthProvider";
+import GlobalSnackbar from "@/components/common/GlobalSnackbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +44,7 @@ export default function RootLayout({
               <AppRouterCacheProvider>
                 <ThemeProvider theme={theme}>
                   <CssBaseline />
+                  <GlobalSnackbar />
                   <AuthProvider>{children}</AuthProvider>
                 </ThemeProvider>
               </AppRouterCacheProvider>
