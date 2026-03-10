@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Logout } from "@mui/icons-material";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ProfileMenu() {
   const { user, logout } = useAuth();

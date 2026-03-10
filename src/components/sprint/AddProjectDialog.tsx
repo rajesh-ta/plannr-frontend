@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { projectsApi, ProjectCreatePayload } from "@/services/api/projects";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AddProjectDialogProps {
   open: boolean;

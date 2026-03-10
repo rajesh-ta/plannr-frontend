@@ -7,7 +7,7 @@ import theme from "@/theme/theme";
 import QueryProvider from "@/components/providers/QueryProvider";
 import ReduxProvider from "@/components/providers/ReduxProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { AuthProvider } from "@/contexts/AuthContext";
+import AuthProvider from "@/components/providers/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

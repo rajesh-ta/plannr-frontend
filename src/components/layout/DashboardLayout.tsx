@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import AppHeader from "./AppHeader";
 import Sidebar from "./Sidebar";
 import { ProjectProvider } from "@/contexts/ProjectContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardLayout({
   children,

@@ -2,7 +2,7 @@
 
 import { Box, Button, Paper, Typography } from "@mui/material";
 import { BlockOutlined } from "@mui/icons-material";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function InactivePage() {
