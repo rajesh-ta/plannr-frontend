@@ -24,14 +24,14 @@ export interface AuthContextValue {
   user: UserOut | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<UserOut>;
   register: (
     name: string,
     email: string,
     password: string,
     role_id?: string,
   ) => Promise<void>;
-  googleSignIn: (credential: string) => Promise<void>;
+  googleSignIn: (credential: string) => Promise<UserOut>;
   logout: () => void;
 }
 
@@ -97,9 +97,10 @@ export function useAuth(): AuthContextValue {
   }, [dispatch]);
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string): Promise<UserOut> => {
       const res = await authApi.login(email, password);
       applyToken(res.access_token, res.user);
+      return res.user;
     },
     [applyToken],
   );
@@ -113,9 +114,10 @@ export function useAuth(): AuthContextValue {
   );
 
   const googleSignIn = useCallback(
-    async (credential: string) => {
+    async (credential: string): Promise<UserOut> => {
       const res = await authApi.googleAuth(credential);
       applyToken(res.access_token, res.user);
+      return res.user;
     },
     [applyToken],
   );

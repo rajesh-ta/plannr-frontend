@@ -34,8 +34,8 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      router.replace("/overview");
+      const u = await login(email, password);
+      router.replace(u.status === "INACTIVE" ? "/inactive" : "/overview");
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data
@@ -50,8 +50,8 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await googleSignIn(credential);
-      router.replace("/overview");
+      const u = await googleSignIn(credential);
+      router.replace(u.status === "INACTIVE" ? "/inactive" : "/overview");
     } catch {
       setError("Google sign-in failed. Please try again.");
     } finally {

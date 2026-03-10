@@ -52,7 +52,7 @@ export default function UserStatusCell({
           sx={{ fontSize: 12, minWidth: 100 }}
           disabled={saving}
         >
-          {["ACTIVE", "INACTIVE", "SUSPENDED"].map((s) => (
+          {["ACTIVE", "INACTIVE"].map((s) => (
             <MenuItem key={s} value={s}>
               {s}
             </MenuItem>
