@@ -14,6 +14,8 @@ import {
   Chip,
   Button,
   Menu,
+  Tab,
+  Tabs,
 } from "@mui/material";
 import {
   KeyboardArrowDown,
@@ -96,6 +98,7 @@ export default function SprintPage() {
   const [pendingDeleteStoryId, setPendingDeleteStoryId] = useState<
     string | null
   >(null);
+  const [mobileColIdx, setMobileColIdx] = useState(0);
 
   // Fetch users using React Query
   const { data: users = [] } = useUsers();
@@ -448,7 +451,7 @@ export default function SprintPage() {
         sx={{
           bgcolor: "white",
           borderBottom: "1px solid #EDEBE9",
-          px: 3,
+          px: { xs: 2, sm: 3 },
           py: 2,
         }}
       >
@@ -456,12 +459,27 @@ export default function SprintPage() {
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
             justifyContent: "space-between",
+            gap: { xs: 1.5, sm: 0 },
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <FormControl size="small" sx={{ minWidth: 250 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: { xs: "100%", sm: 250 },
+                flexGrow: { xs: 1, sm: 0 },
+              }}
+            >
               <Select
                 value={selectedSprintId}
                 onChange={(e) => setSelectedSprintId(e.target.value)}
@@ -601,11 +619,12 @@ export default function SprintPage() {
         sx={{
           bgcolor: "white",
           borderBottom: "1px solid #EDEBE9",
-          px: 3,
+          px: { xs: 2, sm: 3 },
           py: 1.5,
           display: "flex",
           alignItems: "center",
           gap: 2,
+          flexWrap: "wrap",
         }}
       >
         <FormControl size="small">
@@ -629,7 +648,7 @@ export default function SprintPage() {
       </Box>
 
       {/* Main Content - User Stories */}
-      <Box sx={{ px: 3, py: 2 }}>
+      <Box sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
         {/* Collapse All Button */}
         <Box sx={{ mb: 2 }}>
           <Typography
@@ -651,11 +670,38 @@ export default function SprintPage() {
           </Typography>
         </Box>
 
+        {/* Mobile column filter tabs */}
+        <Box sx={{ display: { xs: "block", md: "none" }, mb: 1 }}>
+          <Tabs
+            value={mobileColIdx}
+            onChange={(_e, v) => setMobileColIdx(v)}
+            variant="fullWidth"
+            sx={{ borderBottom: "1px solid #EDEBE9", minHeight: 36 }}
+            TabIndicatorProps={{ style: { backgroundColor: "#0078D4" } }}
+          >
+            {["New", "Active", "Closed", "Removed"].map((col) => (
+              <Tab
+                key={col}
+                label={col}
+                sx={{
+                  fontSize: "12px",
+                  textTransform: "none",
+                  minHeight: 36,
+                  py: 0.5,
+                }}
+              />
+            ))}
+          </Tabs>
+        </Box>
+
         {/* Column Headers */}
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: "300px 1fr 1fr 1fr 1fr",
+            gridTemplateColumns: {
+              xs: "minmax(130px, 45%) 1fr",
+              md: "300px 1fr 1fr 1fr 1fr",
+            },
             gap: 2,
             px: 2,
             py: 1,
@@ -669,18 +715,21 @@ export default function SprintPage() {
           <Typography sx={{ fontSize: "12px", fontWeight: 600 }}>
             User Story
           </Typography>
-          <Typography sx={{ fontSize: "12px", fontWeight: 600 }}>
-            New
-          </Typography>
-          <Typography sx={{ fontSize: "12px", fontWeight: 600 }}>
-            Active
-          </Typography>
-          <Typography sx={{ fontSize: "12px", fontWeight: 600 }}>
-            Closed
-          </Typography>
-          <Typography sx={{ fontSize: "12px", fontWeight: 600 }}>
-            Removed
-          </Typography>
+          {["New", "Active", "Closed", "Removed"].map((col, i) => (
+            <Typography
+              key={col}
+              sx={{
+                fontSize: "12px",
+                fontWeight: 600,
+                display: {
+                  xs: i === mobileColIdx ? "block" : "none",
+                  md: "block",
+                },
+              }}
+            >
+              {col}
+            </Typography>
+          ))}
         </Box>
 
         {/* User Stories List */}
@@ -705,7 +754,10 @@ export default function SprintPage() {
                   <Box
                     sx={{
                       display: "grid",
-                      gridTemplateColumns: "300px 1fr 1fr 1fr 1fr",
+                      gridTemplateColumns: {
+                        xs: "minmax(130px, 45%) 1fr",
+                        md: "300px 1fr 1fr 1fr 1fr",
+                      },
                       gap: 2,
                       px: 2,
                       py: 2,
@@ -984,7 +1036,15 @@ export default function SprintPage() {
                     </Box>
 
                     {/* New Column */}
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Box
+                      sx={{
+                        display: {
+                          xs: mobileColIdx === 0 ? "flex" : "none",
+                          md: "flex",
+                        },
+                        flexDirection: "column",
+                      }}
+                    >
                       <Collapse in={expandedStories[story.id]} timeout="auto">
                         {loadingTasks[story.id] ? (
                           <Typography
@@ -1007,7 +1067,15 @@ export default function SprintPage() {
                     </Box>
 
                     {/* Active Column */}
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Box
+                      sx={{
+                        display: {
+                          xs: mobileColIdx === 1 ? "flex" : "none",
+                          md: "flex",
+                        },
+                        flexDirection: "column",
+                      }}
+                    >
                       <Collapse in={expandedStories[story.id]} timeout="auto">
                         {loadingTasks[story.id] ? (
                           <Typography
@@ -1030,7 +1098,15 @@ export default function SprintPage() {
                     </Box>
 
                     {/* Closed Column */}
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Box
+                      sx={{
+                        display: {
+                          xs: mobileColIdx === 2 ? "flex" : "none",
+                          md: "flex",
+                        },
+                        flexDirection: "column",
+                      }}
+                    >
                       <Collapse in={expandedStories[story.id]} timeout="auto">
                         {loadingTasks[story.id] ? (
                           <Typography
@@ -1053,7 +1129,15 @@ export default function SprintPage() {
                     </Box>
 
                     {/* Removed Column */}
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Box
+                      sx={{
+                        display: {
+                          xs: mobileColIdx === 3 ? "flex" : "none",
+                          md: "flex",
+                        },
+                        flexDirection: "column",
+                      }}
+                    >
                       <Collapse in={expandedStories[story.id]} timeout="auto">
                         {loadingTasks[story.id] ? (
                           <Typography

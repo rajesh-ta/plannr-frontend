@@ -14,6 +14,8 @@ import {
   Typography,
   Divider,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Close, MenuBook } from "@mui/icons-material";
 import { Sprint } from "@/services/api/sprints";
@@ -41,6 +43,8 @@ export default function UserStoryDialog({
 }: UserStoryDialogProps) {
   const isEdit = !!editStory;
   const { data: users = [] } = useUsers();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [sprintId, setSprintId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -109,7 +113,8 @@ export default function UserStoryDialog({
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 2 } }}
+      fullScreen={fullScreen}
+      PaperProps={{ sx: { borderRadius: fullScreen ? 0 : 2 } }}
     >
       <DialogTitle
         sx={{

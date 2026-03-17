@@ -13,10 +13,12 @@ export default function OverviewPage() {
     <Box
       sx={{
         p: { xs: 2, md: 3 },
-        height: "calc(100vh - 48px)",
+        // Desktop: fill viewport exactly so workload section scrolls within itself
+        // Tablet/Mobile: natural height so the whole page scrolls vertically
+        height: { md: "calc(100vh - 48px)" },
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        overflow: { xs: "visible", md: "hidden" },
         boxSizing: "border-box",
       }}
     >

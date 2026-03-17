@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { useRouter } from "next/navigation";
 import AppHeader from "./AppHeader";
@@ -14,6 +14,7 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && user?.status === "INACTIVE") {
@@ -28,13 +29,14 @@ export default function DashboardLayout({
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <AppHeader />
-      <Sidebar />
+      <AppHeader onMenuToggle={() => setMobileOpen(!mobileOpen)} />
+      <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           mt: "48px",
+          minWidth: 0,
         }}
       >
         {children}

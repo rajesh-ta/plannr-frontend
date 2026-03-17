@@ -16,6 +16,8 @@ import {
   Typography,
   Divider,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Close, DirectionsRun } from "@mui/icons-material";
 import { Sprint, SprintCreatePayload } from "@/services/api/sprints";
@@ -41,7 +43,8 @@ export default function SprintDialog({
   onSave,
 }: SprintDialogProps) {
   const isEdit = !!editSprint;
-
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [name, setName] = useState("");
   const [status, setStatus] = useState("planned");
   const [startDate, setStartDate] = useState("");
@@ -99,7 +102,8 @@ export default function SprintDialog({
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 2 } }}
+      fullScreen={fullScreen}
+      PaperProps={{ sx: { borderRadius: fullScreen ? 0 : 2 } }}
     >
       <DialogTitle
         sx={{

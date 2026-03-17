@@ -1,14 +1,25 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   DataGrid,
   GridColDef,
   GridRenderCellParams,
   GridToolbar,
 } from "@mui/x-data-grid";
-import { Avatar, Stack, Typography } from "@mui/material";
-import { Person } from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Divider,
+  InputAdornment,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { Person, Search } from "@mui/icons-material";
 import { User, UserUpdate, usersApi } from "@/services/api/users";
 import { Role } from "@/services/api/roles";
 import { EditingState, formatDate } from "./adminConstants";
@@ -21,9 +32,15 @@ interface UsersDataGridProps {
   modifierNames: Record<string, string>;
   onRefresh: () => Promise<void>;
   onError: (msg: string) => void;
-  /** When false, all inline edit controls (role / status) are hidden. */
   canWrite?: boolean;
 }
+
+// Colour map for the status dot on mobile cards
+const STATUS_DOT: Record<string, string> = {
+  ACTIVE: "#107C10",
+  INACTIVE: "#D13438",
+  SUSPENDED: "#FFA500",
+};
 
 export default function UsersDataGrid({
   users,
@@ -35,6 +52,10 @@ export default function UsersDataGrid({
 }: UsersDataGridProps) {
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isCompact = useMediaQuery(theme.breakpoints.down("md"));
 
   const startEdit = useCallback(
     (userId: string, field: "role" | "status", value: string) => {
@@ -42,11 +63,10 @@ export default function UsersDataGrid({
     },
     [],
   );
-
-  const changeEdit = useCallback((value: string) => {
-    setEditing((prev) => (prev ? { ...prev, value } : null));
-  }, []);
-
+  const changeEdit = useCallback(
+    (value: string) => setEditing((prev) => (prev ? { ...prev, value } : null)),
+    [],
+  );
   const cancelEdit = useCallback(() => setEditing(null), []);
 
   const commitEdit = useCallback(async () => {
@@ -70,6 +90,195 @@ export default function UsersDataGrid({
     }
   }, [editing, roles, onRefresh, onError]);
 
+  // ── Filtered list used by the mobile card view ──────────────────────────────
+  const filteredUsers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        (u.role_name ?? "").toLowerCase().includes(q),
+    );
+  }, [users, search]);
+
+  // ── Mobile card layout (xs only) ────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          border: "1px solid #EDEBE9",
+          borderRadius: 2,
+          overflow: "hidden",
+        }}
+      >
+        {/* Search bar — mirrors DataGrid toolbar */}
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderBottom: "1px solid #EDEBE9",
+            bgcolor: "#FAFAFA",
+          }}
+        >
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="Search by name, email or role…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ fontSize: 16, color: "#A19F9D" }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ "& .MuiOutlinedInput-root": { fontSize: 13 } }}
+          />
+        </Box>
+
+        {/* Cards */}
+        {filteredUsers.length === 0 ? (
+          <Box sx={{ py: 5, textAlign: "center" }}>
+            <Typography fontSize={13} color="#A19F9D">
+              No users match your search.
+            </Typography>
+          </Box>
+        ) : (
+          filteredUsers.map((user, idx) => (
+            <Box key={user.id}>
+              {idx > 0 && <Divider />}
+              <Box sx={{ px: 2, py: 2 }}>
+                {/* Row 1: Avatar + Name + email */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    mb: 1.5,
+                  }}
+                >
+                  <Avatar
+                    src={user.avatar_url ?? undefined}
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      bgcolor: "#0078D4",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {user.avatar_url ? null : <Person sx={{ fontSize: 20 }} />}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography
+                      fontSize={14}
+                      fontWeight={600}
+                      color="#323130"
+                      noWrap
+                    >
+                      {user.name}
+                    </Typography>
+                    <Typography fontSize={12} color="#605E5C" noWrap>
+                      {user.email}
+                    </Typography>
+                  </Box>
+                  {/* Status indicator dot */}
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      bgcolor: STATUS_DOT[user.status] ?? "#A19F9D",
+                      flexShrink: 0,
+                    }}
+                  />
+                </Box>
+
+                {/* Row 2: Role + Status controls */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    flexWrap: "wrap",
+                    pl: "56px", // indent under avatar
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Typography
+                      fontSize={11}
+                      fontWeight={600}
+                      color="#A19F9D"
+                      sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
+                    >
+                      Role
+                    </Typography>
+                    <UserRoleCell
+                      userId={user.id}
+                      roleName={user.role_name}
+                      roles={roles}
+                      editing={editing}
+                      saving={saving}
+                      canEdit={canWrite}
+                      onStartEdit={startEdit}
+                      onChangeEdit={changeEdit}
+                      onCommit={commitEdit}
+                      onCancel={cancelEdit}
+                    />
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Typography
+                      fontSize={11}
+                      fontWeight={600}
+                      color="#A19F9D"
+                      sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
+                    >
+                      Status
+                    </Typography>
+                    <UserStatusCell
+                      userId={user.id}
+                      status={user.status}
+                      editing={editing}
+                      saving={saving}
+                      canEdit={canWrite}
+                      onStartEdit={startEdit}
+                      onChangeEdit={changeEdit}
+                      onCommit={commitEdit}
+                      onCancel={cancelEdit}
+                    />
+                  </Box>
+                </Box>
+
+                {/* Row 3: Last modified */}
+                {(user.last_modified_on || modifierNames[user.id]) && (
+                  <Typography
+                    fontSize={11}
+                    color="#A19F9D"
+                    sx={{ mt: 1, pl: "56px" }}
+                  >
+                    Modified{" "}
+                    {user.last_modified_on
+                      ? formatDate(user.last_modified_on)
+                      : "—"}
+                    {modifierNames[user.id]
+                      ? ` · by ${modifierNames[user.id]}`
+                      : ""}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          ))
+        )}
+      </Paper>
+    );
+  }
+
+  // ── DataGrid layout (sm+) ────────────────────────────────────────────────────
   const columns: GridColDef[] = [
     {
       field: "name",
@@ -192,6 +401,7 @@ export default function UsersDataGrid({
       columns={columns}
       rowHeight={56}
       disableRowSelectionOnClick
+      autoHeight={isCompact}
       slots={{ toolbar: GridToolbar }}
       slotProps={{
         toolbar: {
@@ -200,33 +410,23 @@ export default function UsersDataGrid({
         },
       }}
       sx={{
-        height: "100%",
+        height: isCompact ? "auto" : "100%",
         border: "1px solid #EDEBE9",
         borderRadius: 2,
         bgcolor: "#FFFFFF",
-        "& .MuiDataGrid-columnHeader": {
-          bgcolor: "#F3F2F1",
-        },
+        "& .MuiDataGrid-columnHeader": { bgcolor: "#F3F2F1" },
         "& .MuiDataGrid-columnHeaderTitle": {
           fontWeight: 600,
           fontSize: "12px",
           color: "#323130",
         },
-        // Allow edit controls (Select + action buttons) to visually overflow
-        // horizontally without being clipped by the cell boundary
         "& .MuiDataGrid-cell": {
           borderBottom: "1px solid #EDEBE9",
           overflow: "visible !important",
         },
-        "& .MuiDataGrid-row": {
-          overflow: "visible",
-        },
-        "& .MuiDataGrid-virtualScrollerRenderZone": {
-          overflow: "visible",
-        },
-        "& .MuiDataGrid-row:hover": {
-          bgcolor: "#FAF9F8",
-        },
+        "& .MuiDataGrid-row": { overflow: "visible" },
+        "& .MuiDataGrid-virtualScrollerRenderZone": { overflow: "visible" },
+        "& .MuiDataGrid-row:hover": { bgcolor: "#FAF9F8" },
         "& .MuiDataGrid-toolbarContainer": {
           px: 2,
           pt: 1,
@@ -234,9 +434,7 @@ export default function UsersDataGrid({
           borderBottom: "1px solid #EDEBE9",
           bgcolor: "#FAFAFA",
         },
-        "& .MuiDataGrid-footerContainer": {
-          borderTop: "1px solid #EDEBE9",
-        },
+        "& .MuiDataGrid-footerContainer": { borderTop: "1px solid #EDEBE9" },
       }}
     />
   );

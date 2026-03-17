@@ -54,9 +54,12 @@ export default function TeamWorkloadSection({
     <Paper
       elevation={0}
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
         flex: 1,
-        minHeight: 0,
+        // On desktop the parent is height-constrained so minHeight:0 lets this shrink
+        // and fill. On mobile/tablet the parent is auto-height, so we give it a
+        // minimum height so the content is always visible without internal scroll.
+        minHeight: { xs: 300, md: 0 },
         display: "flex",
         flexDirection: "column",
         border: "1px solid #EDEBE9",
@@ -84,7 +87,14 @@ export default function TeamWorkloadSection({
 
         {/* Legend */}
         {hasData && (
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: { xs: 1, sm: 2 },
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <Box
                 sx={{

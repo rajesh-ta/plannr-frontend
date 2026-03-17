@@ -6,6 +6,8 @@ import {
   Button,
   Typography,
   Box,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
@@ -24,13 +26,22 @@ export default function DeleteConfirmDialog({
   itemType,
   itemName,
 }: DeleteConfirmDialogProps) {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   const handleConfirm = () => {
     onConfirm();
     onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      fullScreen={fullScreen}
+    >
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <WarningAmberIcon sx={{ color: "#D13438", fontSize: 22 }} />

@@ -13,7 +13,12 @@ export default function OverviewHeader() {
     <Box sx={{ mb: 3 }}>
       <Typography
         variant="h5"
-        sx={{ fontWeight: 600, color: "#323130", mb: 0.5 }}
+        sx={{
+          fontWeight: 600,
+          color: "#323130",
+          mb: 0.5,
+          fontSize: { xs: "1.15rem", sm: "1.5rem" },
+        }}
       >
         Overview
       </Typography>

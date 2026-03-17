@@ -42,11 +42,13 @@ export default function AdminPage() {
   return (
     <Box
       sx={{
-        p: 3,
-        height: "calc(100vh - 48px)",
+        p: { xs: 2, sm: 3 },
+        // Desktop: fill viewport so DataGrid scrolls within itself
+        // Tablet/Mobile: natural height so the whole page scrolls
+        height: { md: "calc(100vh - 48px)" },
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        overflow: { xs: "visible", md: "hidden" },
       }}
     >
       <AdminHeader />

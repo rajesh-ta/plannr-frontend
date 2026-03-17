@@ -88,8 +88,8 @@ export default function TaskCard({
         border: "1px solid #EDEBE9",
         borderLeft: `3px solid ${borderColor}`,
         borderRadius: "4px",
-        p: 1.5,
-        mb: 1,
+        p: { xs: 1, md: 1.5 },
+        mb: { xs: 0.75, md: 1 },
         position: "relative",
         "&:hover": {
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",

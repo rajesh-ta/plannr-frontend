@@ -1,4 +1,5 @@
-import { Box, Typography, Divider } from "@mui/material";
+import { useState } from "react";
+import { Box, Typography, Divider, Tab, Tabs } from "@mui/material";
 import { ExpandMore } from "@mui/icons-material";
 import { UserStory } from "@/services/api/userStories";
 import { Task } from "@/services/api/tasks";
@@ -6,6 +7,7 @@ import { User } from "@/services/api/users";
 import UserStoryRow from "./UserStoryRow";
 
 const COLUMNS = ["User Story", "New", "Active", "Closed", "Removed"];
+const TASK_COLUMNS = ["New", "Active", "Closed", "Removed"];
 
 interface BoardBodyProps {
   userStories: UserStory[];
@@ -50,8 +52,10 @@ export default function BoardBody({
   onEditStory,
   onDeleteStoryRequest,
 }: BoardBodyProps) {
+  const [mobileColIdx, setMobileColIdx] = useState(0);
+
   return (
-    <Box sx={{ px: 3, py: 2 }}>
+    <Box sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
       {/* Collapse / Expand all toggle */}
       <Box sx={{ mb: 2 }}>
         <Typography
@@ -71,11 +75,38 @@ export default function BoardBody({
         </Typography>
       </Box>
 
+      {/* Mobile column filter tabs */}
+      <Box sx={{ display: { xs: "block", md: "none" }, mb: 1 }}>
+        <Tabs
+          value={mobileColIdx}
+          onChange={(_e, v) => setMobileColIdx(v)}
+          variant="fullWidth"
+          sx={{ borderBottom: "1px solid #EDEBE9", minHeight: 36 }}
+          TabIndicatorProps={{ style: { backgroundColor: "#0078D4" } }}
+        >
+          {TASK_COLUMNS.map((col) => (
+            <Tab
+              key={col}
+              label={col}
+              sx={{
+                fontSize: "12px",
+                textTransform: "none",
+                minHeight: 36,
+                py: 0.5,
+              }}
+            />
+          ))}
+        </Tabs>
+      </Box>
+
       {/* Column headers */}
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "300px 1fr 1fr 1fr 1fr",
+          gridTemplateColumns: {
+            xs: "minmax(130px, 45%) 1fr",
+            md: "300px 1fr 1fr 1fr 1fr",
+          },
           gap: 2,
           px: 2,
           py: 1,
@@ -83,8 +114,21 @@ export default function BoardBody({
           borderRadius: "4px 4px 0 0",
         }}
       >
-        {COLUMNS.map((col) => (
-          <Typography key={col} sx={{ fontSize: "12px", fontWeight: 600 }}>
+        <Typography sx={{ fontSize: "12px", fontWeight: 600 }}>
+          User Story
+        </Typography>
+        {TASK_COLUMNS.map((col, i) => (
+          <Typography
+            key={col}
+            sx={{
+              fontSize: "12px",
+              fontWeight: 600,
+              display: {
+                xs: i === mobileColIdx ? "block" : "none",
+                md: "block",
+              },
+            }}
+          >
             {col}
           </Typography>
         ))}
@@ -116,6 +160,7 @@ export default function BoardBody({
                 users={users}
                 storyMenuAnchor={storyMenuAnchor}
                 storyMenuId={storyMenuId}
+                mobileColumnIndex={mobileColIdx}
                 onToggle={onToggleStory}
                 onTaskClick={onTaskClick}
                 onAddTask={onAddTask}

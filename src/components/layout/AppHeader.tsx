@@ -8,11 +8,20 @@ import {
   Badge,
   Box,
 } from "@mui/material";
-import { Notifications, Settings, GridView } from "@mui/icons-material";
+import {
+  Notifications,
+  Settings,
+  GridView,
+  Menu as MenuIcon,
+} from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import ProfileMenu from "@/components/layout/ProfileMenu";
 
-export default function AppHeader() {
+interface AppHeaderProps {
+  onMenuToggle?: () => void;
+}
+
+export default function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const router = useRouter();
 
   return (
@@ -26,6 +35,16 @@ export default function AppHeader() {
       }}
     >
       <Toolbar sx={{ minHeight: "48px !important", px: 2 }}>
+        {/* Hamburger — mobile only */}
+        <IconButton
+          size="small"
+          onClick={onMenuToggle}
+          sx={{ color: "white", mr: 1, display: { xs: "flex", sm: "none" } }}
+          aria-label="open navigation"
+        >
+          <MenuIcon fontSize="small" />
+        </IconButton>
+
         {/* App Name */}
         <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
           <Box

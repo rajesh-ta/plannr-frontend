@@ -10,6 +10,8 @@ import {
   Typography,
   Divider,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { projectsApi, ProjectCreatePayload } from "@/services/api/projects";
@@ -27,6 +29,8 @@ export default function AddProjectDialog({
   onCreated,
 }: AddProjectDialogProps) {
   const { user } = useAuth();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState({ name: false, description: false });
@@ -73,7 +77,8 @@ export default function AddProjectDialog({
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 2 } }}
+      fullScreen={fullScreen}
+      PaperProps={{ sx: { borderRadius: fullScreen ? 0 : 2 } }}
     >
       <DialogTitle
         sx={{

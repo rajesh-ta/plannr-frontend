@@ -14,6 +14,8 @@ import {
   Typography,
   Divider,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Close, MenuBook } from "@mui/icons-material";
 import { Task } from "@/services/api/tasks";
@@ -48,6 +50,8 @@ export default function TaskDetailsDialog({
   const [errors, setErrors] = useState({ title: false, description: false });
 
   const isEditMode = !!task;
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Sync state when dialog opens
   useEffect(() => {
@@ -113,9 +117,10 @@ export default function TaskDetailsDialog({
       onClose={handleClose}
       maxWidth="md"
       fullWidth
+      fullScreen={fullScreen}
       PaperProps={{
         sx: {
-          borderRadius: 2,
+          borderRadius: fullScreen ? 0 : 2,
         },
       }}
     >

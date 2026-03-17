@@ -50,6 +50,7 @@ interface UserStoryRowProps {
   users: User[];
   storyMenuAnchor: null | HTMLElement;
   storyMenuId: string | null;
+  mobileColumnIndex?: number;
   onToggle: (id: string) => void;
   onTaskClick: (task: Task) => void;
   onAddTask: (storyId: string) => void;
@@ -68,6 +69,7 @@ export default function UserStoryRow({
   users,
   storyMenuAnchor,
   storyMenuId,
+  mobileColumnIndex = 0,
   onToggle,
   onTaskClick,
   onAddTask,
@@ -85,7 +87,10 @@ export default function UserStoryRow({
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "300px 1fr 1fr 1fr 1fr",
+        gridTemplateColumns: {
+          xs: "minmax(130px, 45%) 1fr",
+          md: "300px 1fr 1fr 1fr 1fr",
+        },
         gap: 2,
         px: 2,
         py: 2,
@@ -291,7 +296,16 @@ export default function UserStoryRow({
 
       {/* Task columns */}
       {TASK_STATUSES.map((status, i) => (
-        <Box key={status} sx={{ display: "flex", flexDirection: "column" }}>
+        <Box
+          key={status}
+          sx={{
+            display: {
+              xs: i === mobileColumnIndex ? "flex" : "none",
+              md: "flex",
+            },
+            flexDirection: "column",
+          }}
+        >
           <Collapse in={isExpanded} timeout="auto">
             {loadingTasks ? (
               <Typography sx={{ fontSize: "11px", color: "#605E5C" }}>

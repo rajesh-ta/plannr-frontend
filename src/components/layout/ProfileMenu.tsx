@@ -58,7 +58,7 @@ export default function ProfileMenu() {
           paper: {
             sx: {
               bgcolor: "#ffffff",
-              minWidth: 260,
+              minWidth: { xs: "85vw", sm: 260 },
               boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
               border: "1px solid #e1dfdd",
               borderRadius: 2,

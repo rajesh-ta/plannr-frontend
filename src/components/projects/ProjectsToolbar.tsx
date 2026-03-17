@@ -68,20 +68,30 @@ export default function ProjectsToolbar({
       sx={{
         bgcolor: "white",
         borderBottom: "1px solid #EDEBE9",
-        px: 3,
-        py: 2,
+        px: { xs: 2, sm: 3 },
+        py: { xs: 1.5, sm: 2 },
       }}
     >
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
+          gap: { xs: 1.5, sm: 0 },
         }}
       >
         {/* Left: dropdowns */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth: 200 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 2,
+            width: { xs: "100%", sm: "auto" },
+          }}
+        >
+          <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 200 } }}>
             <InputLabel sx={{ fontSize: "13px" }} id="project-select-label">
               Project
             </InputLabel>
@@ -112,7 +122,7 @@ export default function ProjectsToolbar({
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 220 }}>
+          <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 220 } }}>
             <InputLabel sx={{ fontSize: "13px" }} id="sprint-select-label">
               Sprint
             </InputLabel>
