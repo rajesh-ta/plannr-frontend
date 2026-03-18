@@ -10,6 +10,11 @@ import type { UserOut } from "@/services/api/auth";
 
 interface PreloadedState {
   auth?: Partial<AuthState>;
+  notification?: {
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "warning" | "info";
+  };
 }
 
 export function makeStore(preloadedState: PreloadedState = {}) {
@@ -26,6 +31,9 @@ export function makeStore(preloadedState: PreloadedState = {}) {
         loading: false,
         ...preloadedState.auth,
       },
+      ...(preloadedState.notification
+        ? { notification: preloadedState.notification }
+        : {}),
     },
   });
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import UserRoleCell from "@/components/admin/UserRoleCell";
 import UserStatusCell from "@/components/admin/UserStatusCell";
@@ -88,8 +88,9 @@ describe("UserRoleCell", () => {
         editing={{ userId: "u1", field: "role", value: "PROJECT_ADMIN" }}
       />,
     );
-    const saveBtn = screen.getByTitle("Save");
-    await user.click(saveBtn);
+    // Save button is wrapped in a Tooltip span with aria-label="Save"
+    const saveWrapper = screen.getByLabelText("Save");
+    await user.click(within(saveWrapper).getByRole("button"));
     expect(baseRoleProps.onCommit).toHaveBeenCalledTimes(1);
   });
 
@@ -101,7 +102,7 @@ describe("UserRoleCell", () => {
         editing={{ userId: "u1", field: "role", value: "PROJECT_ADMIN" }}
       />,
     );
-    const cancelBtn = screen.getByTitle("Cancel");
+    const cancelBtn = screen.getByRole("button", { name: "Cancel" });
     await user.click(cancelBtn);
     expect(baseRoleProps.onCancel).toHaveBeenCalledTimes(1);
   });
@@ -161,7 +162,9 @@ describe("UserStatusCell", () => {
         editing={{ userId: "u1", field: "status", value: "ACTIVE" }}
       />,
     );
-    await user.click(screen.getByTitle("Save"));
+    // Save button is wrapped in a Tooltip span with aria-label="Save"
+    const saveWrapper = screen.getByLabelText("Save");
+    await user.click(within(saveWrapper).getByRole("button"));
     expect(baseStatusProps.onCommit).toHaveBeenCalledTimes(1);
   });
 });

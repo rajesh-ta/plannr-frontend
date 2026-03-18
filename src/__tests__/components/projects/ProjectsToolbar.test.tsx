@@ -72,16 +72,16 @@ describe("ProjectsToolbar", () => {
     renderWithProviders(
       <ProjectsToolbar {...baseProps} loadingSprints={true} />,
     );
-    // Disabled when loading
-    const sprintSelect = screen.getByLabelText("Sprint");
-    expect(sprintSelect).toBeDisabled();
+    // MUI Select renders a combobox div with aria-disabled, not native disabled
+    const sprintCombobox = screen.getAllByRole("combobox")[1];
+    expect(sprintCombobox).toHaveAttribute("aria-disabled", "true");
   });
 
   it("shows loading state in project dropdown", () => {
     renderWithProviders(
       <ProjectsToolbar {...baseProps} loadingProjects={true} projects={[]} />,
     );
-    const projectSelect = screen.getByLabelText("Project");
-    expect(projectSelect).toBeDisabled();
+    const projectCombobox = screen.getAllByRole("combobox")[0];
+    expect(projectCombobox).toHaveAttribute("aria-disabled", "true");
   });
 });

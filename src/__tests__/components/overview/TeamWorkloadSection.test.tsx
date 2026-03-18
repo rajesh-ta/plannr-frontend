@@ -59,6 +59,8 @@ describe("TeamWorkloadSection", () => {
         isLoading={false}
       />,
     );
-    expect(screen.getByText(/no task data/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/no tasks have been assigned/i),
+    ).toBeInTheDocument();
   });
 });

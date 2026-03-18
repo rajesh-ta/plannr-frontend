@@ -1,5 +1,5 @@
 import React from "react";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import UserStoryDialog from "@/components/sprint/UserStoryDialog";
 import { renderWithProviders } from "../test-utils";
@@ -47,7 +47,8 @@ describe("UserStoryDialog", () => {
   describe("Add mode", () => {
     it("shows 'Add User Story' heading", () => {
       renderWithProviders(<UserStoryDialog {...baseProps} />);
-      expect(screen.getByText("Add User Story")).toBeInTheDocument();
+      // Text appears in both the DialogTitle and the submit button
+      expect(screen.getAllByText("Add User Story").length).toBeGreaterThan(0);
     });
 
     it("shows validation errors on empty save", async () => {
@@ -65,7 +66,7 @@ describe("UserStoryDialog", () => {
       await user.type(screen.getByLabelText(/title/i), "New feature");
       await user.type(screen.getByLabelText(/description/i), "As a user...");
       await user.click(screen.getByRole("button", { name: /add user story/i }));
-      await screen.findByText("Add User Story");
+      await waitFor(() => expect(baseProps.onSave).toHaveBeenCalled());
       expect(baseProps.onSave).toHaveBeenCalledWith(
         expect.objectContaining({
           title: "New feature",

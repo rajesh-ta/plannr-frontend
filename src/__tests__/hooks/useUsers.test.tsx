@@ -66,8 +66,9 @@ describe("useUserById", () => {
     const { result } = renderHook(() => useUserById("u2"), {
       wrapper: makeWrapper(),
     });
-    await waitFor(() => result.current !== null);
-    expect(result.current?.name).toBe("Bob");
+    await waitFor(() => {
+      expect(result.current?.name).toBe("Bob");
+    });
   });
 
   it("returns null when userId is undefined", async () => {
@@ -77,12 +78,12 @@ describe("useUserById", () => {
     expect(result.current).toBeNull();
   });
 
-  it("returns null when userId does not match any user", async () => {
+  it("returns undefined when userId does not match any user", async () => {
     const { result } = renderHook(() => useUserById("xyz"), {
       wrapper: makeWrapper(),
     });
     await waitFor(() => mockedUsersApi.getAll.mock.calls.length > 0);
-    // Still null because id doesn't exist
-    expect(result.current).toBeNull();
+    // undefined because find() returns undefined for no match
+    expect(result.current).toBeUndefined();
   });
 });

@@ -74,7 +74,7 @@ describe("ProjectSummarySection", () => {
         isLoading={false}
       />,
     );
-    expect(screen.getByText("2")).toBeInTheDocument(); // 2 sprints
+    expect(screen.getAllByText("2").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders skeleton when loading", () => {

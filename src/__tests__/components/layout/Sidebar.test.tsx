@@ -1,5 +1,5 @@
 import React from "react";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Sidebar from "@/components/layout/Sidebar";
 import { renderWithProviders, makeUser } from "../../test-utils";
@@ -27,12 +27,12 @@ beforeEach(() => {
 describe("Sidebar", () => {
   it("renders Overview nav item", () => {
     renderWithProviders(<Sidebar />);
-    expect(screen.getByText("Overview")).toBeInTheDocument();
+    expect(screen.getAllByText("Overview").length).toBeGreaterThan(0);
   });
 
   it("renders Boards nav item", () => {
     renderWithProviders(<Sidebar />);
-    expect(screen.getByText("Boards")).toBeInTheDocument();
+    expect(screen.getAllByText("Boards").length).toBeGreaterThan(0);
   });
 
   it("does not render Admin item when user lacks admin:read permission", () => {
@@ -46,23 +46,25 @@ describe("Sidebar", () => {
       can: (perm: string) => perm === "admin:read",
     });
     renderWithProviders(<Sidebar />);
-    expect(screen.getByText("Admin")).toBeInTheDocument();
+    expect(screen.getAllByText("Admin").length).toBeGreaterThan(0);
   });
 
   it("navigates to /overview when Overview is clicked", async () => {
     const user = userEvent.setup();
     renderWithProviders(<Sidebar />);
-    await user.click(screen.getByText("Overview"));
+    await user.click(screen.getAllByText("Overview")[0]);
     expect(mockPush).toHaveBeenCalledWith("/overview");
   });
 
   it("toggles boards collapse on Boards click", async () => {
     const user = userEvent.setup();
     renderWithProviders(<Sidebar />);
-    // Projects is visible by default (boardsOpen=true)
-    expect(screen.getByText("Projects")).toBeInTheDocument();
-    await user.click(screen.getByText("Boards"));
-    // After collapsing, Projects should not be visible
-    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
+    // Projects is visible by default (boardsOpen=true) — rendered in 2 drawers
+    expect(screen.getAllByText("Projects").length).toBeGreaterThan(0);
+    await user.click(screen.getAllByText("Boards")[0]);
+    // After collapsing, Projects should be removed (unmountOnExit)
+    await waitFor(() =>
+      expect(screen.queryByText("Projects")).not.toBeInTheDocument(),
+    );
   });
 });

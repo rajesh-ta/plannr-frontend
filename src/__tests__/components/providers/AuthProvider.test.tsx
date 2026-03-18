@@ -75,7 +75,7 @@ describe("AuthProvider", () => {
       </AuthProvider>,
     );
     await waitFor(() => {
-      expect(mockedCookies.remove).toHaveBeenCalledWith("auth_token");
+      expect(mockedCookies.remove).toHaveBeenCalledWith("plannr_token");
     });
   });
 });
