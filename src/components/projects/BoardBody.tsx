@@ -70,7 +70,13 @@ export default function BoardBody({
             "&:hover": { textDecoration: "underline" },
           }}
         >
-          <ExpandMore sx={{ fontSize: 16 }} />
+          <ExpandMore
+            sx={{
+              fontSize: 16,
+              transform: allCollapsed ? "rotate(0deg)" : "rotate(180deg)",
+              transition: "transform 0.2s",
+            }}
+          />
           {allCollapsed ? "Expand all" : "Collapse all"}
         </Typography>
       </Box>
