@@ -47,6 +47,8 @@ export default function TaskDetailsDialog({
   const [status, setStatus] = useState("new");
   const [assigneeId, setAssigneeId] = useState("");
   const [estimatedHours, setEstimatedHours] = useState(0);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [errors, setErrors] = useState({ title: false, description: false });
 
   const isEditMode = !!task;
@@ -63,6 +65,8 @@ export default function TaskDetailsDialog({
         setStatus(task.status);
         setAssigneeId(task.assignee_id || "");
         setEstimatedHours(task.estimated_hours || 0);
+        setStartDate(task.start_date || "");
+        setEndDate(task.end_date || "");
       } else {
         // Add mode - reset to defaults
         setTitle("");
@@ -70,6 +74,8 @@ export default function TaskDetailsDialog({
         setStatus("new");
         setAssigneeId("");
         setEstimatedHours(0);
+        setStartDate("");
+        setEndDate("");
       }
       setErrors({ title: false, description: false });
     }
@@ -95,6 +101,8 @@ export default function TaskDetailsDialog({
         status,
         assignee_id: assigneeId || undefined,
         estimated_hours: estimatedHours,
+        start_date: startDate || null,
+        end_date: endDate || null,
       };
 
       if (task) {
@@ -281,6 +289,40 @@ export default function TaskDetailsDialog({
                 : {}
             }
           />
+
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <TextField
+              label="Start Date"
+              type="date"
+              fullWidth
+              value={startDate}
+              onChange={(e) => !readOnly && setStartDate(e.target.value)}
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              InputProps={{ readOnly }}
+              sx={
+                readOnly
+                  ? { "& .MuiOutlinedInput-root": { bgcolor: "#FAFAFA" } }
+                  : {}
+              }
+            />
+            <TextField
+              label="End Date"
+              type="date"
+              fullWidth
+              value={endDate}
+              onChange={(e) => !readOnly && setEndDate(e.target.value)}
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              InputProps={{ readOnly }}
+              inputProps={{ min: startDate || undefined }}
+              sx={
+                readOnly
+                  ? { "& .MuiOutlinedInput-root": { bgcolor: "#FAFAFA" } }
+                  : {}
+              }
+            />
+          </Box>
         </Box>
       </DialogContent>
 

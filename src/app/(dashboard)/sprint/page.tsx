@@ -272,6 +272,8 @@ export default function SprintPage() {
           status: string;
           estimated_hours?: number;
           assignee_id?: string;
+          start_date?: string | null;
+          end_date?: string | null;
         } = {
           user_story_id: addingTaskForStory,
           title: taskData.title!,
@@ -279,6 +281,8 @@ export default function SprintPage() {
           status: taskData.status!,
           estimated_hours: taskData.estimated_hours,
           assignee_id: taskData.assignee_id,
+          start_date: taskData.start_date ?? null,
+          end_date: taskData.end_date ?? null,
         };
 
         const newTask = await tasksApi.create(payload);
@@ -300,6 +304,8 @@ export default function SprintPage() {
           status: taskData.status,
           estimated_hours: taskData.estimated_hours,
           assignee_id: taskData.assignee_id,
+          start_date: taskData.start_date ?? null,
+          end_date: taskData.end_date ?? null,
         };
 
         const updatedTaskData = await tasksApi.update(selectedTask.id, payload);

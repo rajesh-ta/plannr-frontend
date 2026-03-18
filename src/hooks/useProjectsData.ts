@@ -219,6 +219,7 @@ export function useProjectsData() {
   };
 
   const handleSaveTask = async (taskData: Partial<Task>) => {
+    console.log("Saving task with data:", taskData);
     try {
       if (addingTaskForStory) {
         const payload = {
@@ -228,6 +229,8 @@ export function useProjectsData() {
           status: taskData.status!,
           estimated_hours: taskData.estimated_hours,
           assignee_id: taskData.assignee_id,
+          start_date: taskData.start_date ?? null,
+          end_date: taskData.end_date ?? null,
         };
         const newTask = await tasksApi.create(payload);
         setStoryTasks((prev) => ({
@@ -242,6 +245,8 @@ export function useProjectsData() {
           status: taskData.status,
           estimated_hours: taskData.estimated_hours,
           assignee_id: taskData.assignee_id,
+          start_date: taskData.start_date ?? null,
+          end_date: taskData.end_date ?? null,
         });
         setStoryTasks((prev) => ({
           ...prev,

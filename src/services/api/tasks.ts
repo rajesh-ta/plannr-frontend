@@ -13,6 +13,8 @@ export interface Task {
   created_at: string;
   estimated_hours?: number;
   assignee_id?: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 export interface TaskUpdatePayload {
@@ -22,6 +24,8 @@ export interface TaskUpdatePayload {
   status?: string;
   estimated_hours?: number;
   assignee_id?: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 export interface TaskCreatePayload {
@@ -31,6 +35,8 @@ export interface TaskCreatePayload {
   status: string;
   estimated_hours?: number;
   assignee_id?: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 export const tasksApi = {

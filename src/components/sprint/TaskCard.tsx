@@ -14,6 +14,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { getTaskStatusStyle } from "@/constants/statusColors";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import PermissionGate from "@/components/common/PermissionGate";
@@ -238,6 +239,39 @@ export default function TaskCard({
               bgcolor: "#E1DFDD",
             }}
           />
+        </Box>
+      )}
+      {(task.start_date || task.end_date) && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            mt: 1,
+            px: 0.75,
+            py: 0.4,
+            bgcolor: "#F3F2F1",
+            borderRadius: "4px",
+          }}
+        >
+          <CalendarTodayIcon sx={{ fontSize: 10, color: "#605E5C" }} />
+          <Typography
+            sx={{ fontSize: "10px", color: "#605E5C", letterSpacing: "0.2px" }}
+          >
+            {task.start_date
+              ? new Date(task.start_date + "T00:00:00").toLocaleDateString(
+                  "en-US",
+                  { month: "short", day: "numeric" },
+                )
+              : "—"}
+            {" → "}
+            {task.end_date
+              ? new Date(task.end_date + "T00:00:00").toLocaleDateString(
+                  "en-US",
+                  { month: "short", day: "numeric" },
+                )
+              : "—"}
+          </Typography>
         </Box>
       )}
       <DeleteConfirmDialog
