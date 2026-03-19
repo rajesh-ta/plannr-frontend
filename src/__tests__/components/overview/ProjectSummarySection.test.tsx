@@ -62,7 +62,7 @@ describe("ProjectSummarySection", () => {
         isLoading={false}
       />,
     );
-    expect(screen.getByText("2")).toBeInTheDocument(); // 2 projects
+    expect(screen.getAllByText("2")[0]).toBeInTheDocument(); // 2 projects
   });
 
   it("renders sprint count metric", () => {

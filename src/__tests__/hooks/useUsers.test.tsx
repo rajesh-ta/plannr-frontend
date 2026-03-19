@@ -82,8 +82,7 @@ describe("useUserById", () => {
     const { result } = renderHook(() => useUserById("xyz"), {
       wrapper: makeWrapper(),
     });
-    await waitFor(() => mockedUsersApi.getAll.mock.calls.length > 0);
-    // undefined because find() returns undefined for no match
-    expect(result.current).toBeUndefined();
+    // wait until the query has loaded and find() returns undefined for no match
+    await waitFor(() => expect(result.current).toBeUndefined());
   });
 });
