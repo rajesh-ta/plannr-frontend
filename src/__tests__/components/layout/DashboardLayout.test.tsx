@@ -47,7 +47,10 @@ jest.mock("@/components/layout/Sidebar", () => ({
 import { useAuth } from "@/hooks/useAuth";
 const mockedUseAuth = useAuth as jest.Mock;
 
-function setAuth(partial: { user?: ReturnType<typeof makeUser> | null; loading?: boolean }) {
+function setAuth(partial: {
+  user?: ReturnType<typeof makeUser> | null;
+  loading?: boolean;
+}) {
   mockedUseAuth.mockReturnValue({
     user: partial.user ?? null,
     loading: partial.loading ?? false,
