@@ -144,7 +144,7 @@ export default function UserStoryRow({
                 transition: "color 0.15s ease",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                whiteSpace: { xs: "normal", md: "nowrap" },
               }}
             >
               {story.title}
@@ -220,7 +220,7 @@ export default function UserStoryRow({
                   mb: 1,
                   lineHeight: 1.4,
                   display: "-webkit-box",
-                  WebkitLineClamp: 2,
+                  WebkitLineClamp: { xs: 3, md: 2 },
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                 }}
