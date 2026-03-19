@@ -67,7 +67,9 @@ beforeEach(() => {
 describe("ProjectsToolbar — project dropdown", () => {
   it("renders the Project select label", () => {
     renderWithProviders(<ProjectsToolbar {...baseProps} />);
-    expect(screen.getByText("Project", { selector: "label" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Project", { selector: "label" }),
+    ).toBeInTheDocument();
   });
 
   it("is disabled while projects are loading", () => {
@@ -106,7 +108,9 @@ describe("ProjectsToolbar — project dropdown", () => {
 describe("ProjectsToolbar — sprint dropdown", () => {
   it("renders the Sprint select label", () => {
     renderWithProviders(<ProjectsToolbar {...baseProps} />);
-    expect(screen.getByText("Sprint", { selector: "label" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Sprint", { selector: "label" }),
+    ).toBeInTheDocument();
   });
 
   it("is disabled while sprints are loading", () => {
