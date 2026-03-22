@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useQueries, useQueryClient } from "@tanstack/react-query";
 import { useProject } from "@/hooks/useProject";
 import { projectsApi, Project } from "@/services/api/projects";
 import {
@@ -15,6 +16,7 @@ import { tasksApi, Task } from "@/services/api/tasks";
 import { useUsers } from "@/hooks/useUsers";
 
 export function useProjectsData() {
+  const queryClient = useQueryClient();
   const {
     selectedProjectId,
     setSelectedProjectId,
@@ -22,154 +24,106 @@ export function useProjectsData() {
     setSelectedSprintId,
   } = useProject();
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loadingProjects, setLoadingProjects] = useState(true);
+  //  Server state via React Query 
 
-  const [sprints, setSprints] = useState<Sprint[]>([]);
-  const [loadingSprints, setLoadingSprints] = useState(false);
+  const { data: projects = [], isLoading: loadingProjects } = useQuery<Project[]>({
+    queryKey: ["projects"],
+    queryFn: projectsApi.getAll,
+  });
 
-  const [userStories, setUserStories] = useState<UserStory[]>([]);
-  const [loadingUserStories, setLoadingUserStories] = useState(false);
+  const { data: sprints = [], isLoading: loadingSprints } = useQuery<Sprint[]>({
+    queryKey: ["sprints", selectedProjectId],
+    queryFn: () => sprintsApi.getByProjectId(selectedProjectId),
+    enabled: !!selectedProjectId,
+  });
 
-  const [expandedStories, setExpandedStories] = useState<
-    Record<string, boolean>
-  >({});
+  const { data: userStories = [], isLoading: loadingUserStories } = useQuery<UserStory[]>({
+    queryKey: ["userStories", selectedSprintId],
+    queryFn: () => userStoriesApi.getBySprintId(selectedSprintId),
+    enabled: !!selectedSprintId,
+  });
+
+  // Fetch tasks for every user story in parallel
+  const storyTaskQueries = useQueries({
+    queries: userStories.map((story) => ({
+      queryKey: ["tasks", "story", story.id],
+      queryFn: () => tasksApi.getByUserStoryId(story.id),
+    })),
+  });
+
+  const storyTasks: Record<string, Task[]> = {};
+  const loadingTasks: Record<string, boolean> = {};
+  userStories.forEach((story, i) => {
+    storyTasks[story.id] = storyTaskQueries[i]?.data ?? [];
+    loadingTasks[story.id] = storyTaskQueries[i]?.isLoading ?? false;
+  });
+
+  //  Local UI state 
+
+  const [expandedStories, setExpandedStories] = useState<Record<string, boolean>>({});
   const [allCollapsed, setAllCollapsed] = useState(false);
-  const [storyTasks, setStoryTasks] = useState<Record<string, Task[]>>({});
-  const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({});
 
-  // Dialog / menu state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [addingTaskForStory, setAddingTaskForStory] = useState<string | null>(
-    null,
-  );
-  const [newWorkItemAnchor, setNewWorkItemAnchor] =
-    useState<null | HTMLElement>(null);
+  const [addingTaskForStory, setAddingTaskForStory] = useState<string | null>(null);
+  const [newWorkItemAnchor, setNewWorkItemAnchor] = useState<null | HTMLElement>(null);
   const [userStoryDialogOpen, setUserStoryDialogOpen] = useState(false);
-  const [editingUserStory, setEditingUserStory] = useState<UserStory | null>(
-    null,
-  );
+  const [editingUserStory, setEditingUserStory] = useState<UserStory | null>(null);
   const [sprintDialogOpen, setSprintDialogOpen] = useState(false);
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
   const [addProjectDialogOpen, setAddProjectDialogOpen] = useState(false);
-  const [storyMenuAnchor, setStoryMenuAnchor] = useState<null | HTMLElement>(
-    null,
-  );
+  const [storyMenuAnchor, setStoryMenuAnchor] = useState<null | HTMLElement>(null);
   const [storyMenuId, setStoryMenuId] = useState<string | null>(null);
   const [deleteStoryConfirmOpen, setDeleteStoryConfirmOpen] = useState(false);
-  const [pendingDeleteStoryId, setPendingDeleteStoryId] = useState<
-    string | null
-  >(null);
+  const [pendingDeleteStoryId, setPendingDeleteStoryId] = useState<string | null>(null);
 
   const { data: users = [] } = useUsers();
 
-  // Holds a sprint ID to select after a project-switch triggered re-fetch
+  // Holds a sprint ID to select after sprints refetch (cross-project sprint creation)
   const pendingSprintIdRef = useRef<string | null>(null);
 
-  // ── Fetch projects on mount ────────────────────────────────────────────
+  //  Auto-select first project on initial load 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoadingProjects(true);
-        const data = await projectsApi.getAll();
-        setProjects(data);
-        if (data.length > 0 && !selectedProjectId) {
-          setSelectedProjectId(data[0].id);
-        }
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-      } finally {
-        setLoadingProjects(false);
-      }
-    };
-    fetchProjects();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!loadingProjects && !selectedProjectId && projects.length > 0) {
+      setSelectedProjectId(projects[0].id);
+    }
+  }, [projects, loadingProjects, selectedProjectId, setSelectedProjectId]);
 
-  // ── Fetch sprints on project change ──────────────────────────────────
+  //  Reset sprint selection when project changes 
   useEffect(() => {
-    const fetchSprints = async () => {
-      if (!selectedProjectId) return;
-      try {
-        setLoadingSprints(true);
-        const data = await sprintsApi.getByProjectId(selectedProjectId);
-        setSprints(data);
-        // If we're expecting a specific sprint (e.g. just created for this project)
-        const pendingId = pendingSprintIdRef.current;
-        pendingSprintIdRef.current = null;
-        const targetSprint = pendingId && data.find((s) => s.id === pendingId);
-        setSelectedSprintId(
-          targetSprint ? pendingId! : data.length > 0 ? data[0].id : "",
-        );
-      } catch (error) {
-        console.error("Failed to fetch sprints:", error);
-        setSprints([]);
-        setSelectedSprintId("");
-      } finally {
-        setLoadingSprints(false);
-      }
-    };
-    fetchSprints();
-  }, [selectedProjectId, setSelectedSprintId]);
+    setSelectedSprintId("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProjectId]);
 
-  // ── Fetch user stories on sprint change ──────────────────────────────
+  //  Auto-select sprint once loaded and none is selected 
   useEffect(() => {
-    const fetchUserStories = async () => {
-      if (!selectedSprintId) {
-        setUserStories([]);
-        return;
-      }
-      try {
-        setLoadingUserStories(true);
-        const data = await userStoriesApi.getBySprintId(selectedSprintId);
-        setUserStories(data);
-        setExpandedStories({});
-        setStoryTasks({});
-        setLoadingTasks({});
-      } catch (error) {
-        console.error("Failed to fetch user stories:", error);
-        setUserStories([]);
-      } finally {
-        setLoadingUserStories(false);
-      }
-    };
-    fetchUserStories();
+    if (loadingSprints || !selectedProjectId || selectedSprintId) return;
+    if (sprints.length === 0) {
+      setSelectedSprintId("");
+      return;
+    }
+    const pendingId = pendingSprintIdRef.current;
+    if (pendingId) {
+      pendingSprintIdRef.current = null;
+      const found = sprints.find((s) => s.id === pendingId);
+      setSelectedSprintId(found ? pendingId : sprints[0].id);
+    } else {
+      setSelectedSprintId(sprints[0].id);
+    }
+  }, [sprints, loadingSprints, selectedProjectId, selectedSprintId, setSelectedSprintId]);
+
+  //  Reset board expand state when sprint changes 
+  useEffect(() => {
+    setExpandedStories({});
+    setAllCollapsed(false);
   }, [selectedSprintId]);
 
-  // ── Auto-load tasks for all user stories ─────────────────────────────
-  useEffect(() => {
-    if (userStories.length === 0) return;
-    const loadTasks = async () => {
-      await Promise.all(
-        userStories.map(async (story) => {
-          try {
-            setLoadingTasks((prev) => ({ ...prev, [story.id]: true }));
-            const tasks = await tasksApi.getByUserStoryId(story.id);
-            setStoryTasks((prev) =>
-              prev[story.id] === undefined
-                ? { ...prev, [story.id]: tasks }
-                : prev,
-            );
-          } catch {
-            setStoryTasks((prev) =>
-              prev[story.id] === undefined ? { ...prev, [story.id]: [] } : prev,
-            );
-          } finally {
-            setLoadingTasks((prev) => ({ ...prev, [story.id]: false }));
-          }
-        }),
-      );
-    };
-    loadTasks();
-  }, [userStories]);
+  //  Board handlers 
 
-  // ── Board handlers ────────────────────────────────────────────────────
   const handleCollapseAll = () => {
     if (allCollapsed) {
       const expanded: Record<string, boolean> = {};
-      userStories.forEach((s) => {
-        expanded[s.id] = true;
-      });
+      userStories.forEach((s) => { expanded[s.id] = true; });
       setExpandedStories(expanded);
     } else {
       setExpandedStories({});
@@ -177,31 +131,20 @@ export function useProjectsData() {
     setAllCollapsed(!allCollapsed);
   };
 
-  const toggleStory = async (storyId: string) => {
-    const isExpanding = !expandedStories[storyId];
-    setExpandedStories((prev) => ({ ...prev, [storyId]: isExpanding }));
-    if (isExpanding && !storyTasks[storyId]) {
-      try {
-        setLoadingTasks((prev) => ({ ...prev, [storyId]: true }));
-        const tasks = await tasksApi.getByUserStoryId(storyId);
-        setStoryTasks((prev) => ({ ...prev, [storyId]: tasks }));
-      } catch {
-        setStoryTasks((prev) => ({ ...prev, [storyId]: [] }));
-      } finally {
-        setLoadingTasks((prev) => ({ ...prev, [storyId]: false }));
-      }
-    }
+  // Tasks are pre-fetched via useQueries — just toggle expand state
+  const toggleStory = (storyId: string) => {
+    setExpandedStories((prev) => ({ ...prev, [storyId]: !prev[storyId] }));
   };
 
-  // ── Task dialog handlers ──────────────────────────────────────────────
+  //  Task handlers 
+
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task);
     setDialogOpen(true);
   };
 
   const getSelectedUserStory = () => {
-    if (addingTaskForStory)
-      return userStories.find((s) => s.id === addingTaskForStory);
+    if (addingTaskForStory) return userStories.find((s) => s.id === addingTaskForStory);
     if (!selectedTask) return null;
     return userStories.find((s) => s.id === selectedTask.user_story_id);
   };
@@ -219,10 +162,9 @@ export function useProjectsData() {
   };
 
   const handleSaveTask = async (taskData: Partial<Task>) => {
-    console.log("Saving task with data:", taskData);
     try {
       if (addingTaskForStory) {
-        const payload = {
+        await tasksApi.create({
           user_story_id: addingTaskForStory,
           title: taskData.title!,
           description: taskData.description!,
@@ -231,14 +173,11 @@ export function useProjectsData() {
           assignee_id: taskData.assignee_id,
           start_date: taskData.start_date ?? null,
           end_date: taskData.end_date ?? null,
-        };
-        const newTask = await tasksApi.create(payload);
-        setStoryTasks((prev) => ({
-          ...prev,
-          [addingTaskForStory]: [...(prev[addingTaskForStory] || []), newTask],
-        }));
+        });
+        queryClient.invalidateQueries({ queryKey: ["tasks", "story", addingTaskForStory] });
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
       } else if (selectedTask) {
-        const updated = await tasksApi.update(selectedTask.id, {
+        await tasksApi.update(selectedTask.id, {
           user_story_id: taskData.user_story_id || selectedTask.user_story_id,
           title: taskData.title,
           description: taskData.description,
@@ -248,12 +187,8 @@ export function useProjectsData() {
           start_date: taskData.start_date ?? null,
           end_date: taskData.end_date ?? null,
         });
-        setStoryTasks((prev) => ({
-          ...prev,
-          [selectedTask.user_story_id]: (
-            prev[selectedTask.user_story_id] || []
-          ).map((t) => (t.id === updated.id ? updated : t)),
-        }));
+        queryClient.invalidateQueries({ queryKey: ["tasks", "story", selectedTask.user_story_id] });
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
       }
     } catch (error) {
       console.error("Failed to save task:", error);
@@ -263,42 +198,34 @@ export function useProjectsData() {
   const handleDeleteTask = async (taskId: string) => {
     try {
       let userStoryId = "";
-      for (const [sid, tasks] of Object.entries(storyTasks)) {
-        if (tasks.some((t) => t.id === taskId)) {
-          userStoryId = sid;
+      for (const story of userStories) {
+        const cached = queryClient.getQueryData<Task[]>(["tasks", "story", story.id]);
+        if (cached?.some((t) => t.id === taskId)) {
+          userStoryId = story.id;
           break;
         }
       }
       if (!userStoryId) return;
       await tasksApi.delete(taskId);
-      setStoryTasks((prev) => ({
-        ...prev,
-        [userStoryId]: (prev[userStoryId] || []).filter((t) => t.id !== taskId),
-      }));
+      queryClient.invalidateQueries({ queryKey: ["tasks", "story", userStoryId] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       console.error("Failed to delete task:", error);
     }
   };
 
-  // ── User story handlers ───────────────────────────────────────────────
-  const handleSaveUserStory = async (
-    payload: UserStoryCreatePayload,
-    id?: string,
-  ) => {
+  //  User story handlers 
+
+  const handleSaveUserStory = async (payload: UserStoryCreatePayload, id?: string) => {
     if (id) {
-      const updated = await userStoriesApi.update(id, payload);
-      setUserStories((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      await userStoriesApi.update(id, payload);
     } else {
-      const newStory = await userStoriesApi.create(payload);
-      if (newStory.sprint_id === selectedSprintId)
-        setUserStories((prev) => [...prev, newStory]);
+      await userStoriesApi.create(payload);
     }
+    queryClient.invalidateQueries({ queryKey: ["userStories", selectedSprintId] });
   };
 
-  const handleStoryMenuOpen = (
-    e: React.MouseEvent<HTMLElement>,
-    storyId: string,
-  ) => {
+  const handleStoryMenuOpen = (e: React.MouseEvent<HTMLElement>, storyId: string) => {
     e.stopPropagation();
     setStoryMenuAnchor(e.currentTarget);
     setStoryMenuId(storyId);
@@ -330,46 +257,39 @@ export function useProjectsData() {
     setPendingDeleteStoryId(null);
     try {
       await userStoriesApi.delete(idToDelete);
-      setUserStories((prev) => prev.filter((s) => s.id !== idToDelete));
-      setStoryTasks((prev) => {
-        const next = { ...prev };
-        delete next[idToDelete];
-        return next;
-      });
+      queryClient.invalidateQueries({ queryKey: ["userStories", selectedSprintId] });
+      queryClient.removeQueries({ queryKey: ["tasks", "story", idToDelete] });
     } catch (error) {
       console.error("Failed to delete user story:", error);
     }
   };
 
-  // ── Sprint handler ────────────────────────────────────────────────────
+  //  Sprint handler 
+
   const handleSaveSprint = async (payload: SprintCreatePayload) => {
     const created = await sprintsApi.create(payload);
     if (payload.project_id !== selectedProjectId) {
-      // Sprint belongs to a different project — switch the project selection.
-      // The fetchSprints effect will re-run; pendingSprintIdRef tells it which
-      // sprint to auto-select once the new list is loaded.
       pendingSprintIdRef.current = created.id;
       setSelectedProjectId(payload.project_id);
     } else {
-      setSprints((prev) => [...prev, created]);
+      await queryClient.invalidateQueries({ queryKey: ["sprints", selectedProjectId] });
       setSelectedSprintId(created.id);
     }
   };
 
-  // ── Project refresh (after add project) ──────────────────────────────
+  //  Project handler 
+
   const handleProjectCreated = useCallback(async () => {
-    const data = await projectsApi.getAll();
-    setProjects(data);
-    if (data.length > 0) setSelectedProjectId(data[0].id);
-  }, [setSelectedProjectId]);
+    await queryClient.invalidateQueries({ queryKey: ["projects"] });
+    const fresh = queryClient.getQueryData<Project[]>(["projects"]);
+    if (fresh && fresh.length > 0) setSelectedProjectId(fresh[0].id);
+  }, [queryClient, setSelectedProjectId]);
 
   return {
-    // selectors
     selectedProjectId,
     setSelectedProjectId,
     selectedSprintId,
     setSelectedSprintId,
-    // data
     projects,
     loadingProjects,
     sprints,
@@ -379,10 +299,8 @@ export function useProjectsData() {
     storyTasks,
     loadingTasks,
     users,
-    // board ui
     expandedStories,
     allCollapsed,
-    // dialog / menu state
     dialogOpen,
     selectedTask,
     addingTaskForStory,
@@ -403,7 +321,6 @@ export function useProjectsData() {
     deleteStoryConfirmOpen,
     setDeleteStoryConfirmOpen,
     pendingDeleteStoryId,
-    // handlers
     handleCollapseAll,
     toggleStory,
     handleTaskClick,
