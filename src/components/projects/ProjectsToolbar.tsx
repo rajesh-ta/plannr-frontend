@@ -75,23 +75,25 @@ export default function ProjectsToolbar({
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "flex-start", sm: "center" },
-          justifyContent: "space-between",
-          gap: { xs: 1.5, sm: 0 },
+          flexWrap: { xs: "wrap", md: "nowrap" },
+          alignItems: "center",
+          gap: 2,
         }}
       >
-        {/* Left: dropdowns */}
+        {/* Dropdowns — full width at xs/sm so button wraps to next line; auto at md+ so everything fits in one row */}
         <Box
           sx={{
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             alignItems: { xs: "stretch", sm: "center" },
             gap: 2,
-            width: { xs: "100%", sm: "auto" },
+            width: { xs: "100%", md: "auto" },
           }}
         >
-          <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 200 } }}>
+          <FormControl
+            size="small"
+            sx={{ minWidth: { xs: "100%", sm: 160 }, maxWidth: { sm: 260 } }}
+          >
             <InputLabel sx={{ fontSize: "13px" }} id="project-select-label">
               Project
             </InputLabel>
@@ -122,7 +124,10 @@ export default function ProjectsToolbar({
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 220 } }}>
+          <FormControl
+            size="small"
+            sx={{ minWidth: { xs: "100%", sm: 180 }, maxWidth: { sm: 280 } }}
+          >
             <InputLabel sx={{ fontSize: "13px" }} id="sprint-select-label">
               Sprint
             </InputLabel>
@@ -160,7 +165,7 @@ export default function ProjectsToolbar({
           </FormControl>
         </Box>
 
-        {/* Right: New Work Item */}
+        {/* New Work Item — wraps to next line at xs/sm (left-aligned), inline right at md+ */}
         {showNewWorkItem && (
           <>
             <Button
@@ -172,6 +177,9 @@ export default function ProjectsToolbar({
                 textTransform: "none",
                 fontSize: "14px",
                 fontWeight: 600,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                ml: { md: "auto" },
                 "&:hover": { bgcolor: "#106EBE" },
               }}
             >
