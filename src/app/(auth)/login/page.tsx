@@ -171,6 +171,11 @@ export default function LoginPage() {
             sx={{
               bgcolor: "#9775fa",
               "&:hover": { bgcolor: "#7c5cdb" },
+              "&.Mui-disabled": {
+                bgcolor: "#6a52c4",
+                color: "rgba(255,255,255,0.7)",
+                opacity: 0.85,
+              },
               fontWeight: 600,
               py: 1.2,
               borderRadius: 2,
