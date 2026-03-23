@@ -59,9 +59,18 @@ export default function SignupPage() {
       await register(name, email, password, roleId);
       router.replace("/overview");
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data
-          ?.detail || "Registration failed. Please try again.";
+      const detail = (err as { response?: { data?: { detail?: unknown } } })
+        ?.response?.data?.detail;
+      const msg = Array.isArray(detail)
+        ? detail
+            .map(
+              (e: { msg?: string }) =>
+                e.msg?.replace(/^Value error,\s*/i, "") ?? "",
+            )
+            .join(" ")
+        : typeof detail === "string"
+          ? detail
+          : "Registration failed. Please try again.";
       setError(msg);
     } finally {
       setLoading(false);

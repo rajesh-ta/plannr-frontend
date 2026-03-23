@@ -37,9 +37,20 @@ export default function LoginPage() {
       const u = await login(email, password);
       router.replace(u.status === "INACTIVE" ? "/inactive" : "/overview");
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data
-          ?.detail || "Login failed. Please check your credentials.";
+      const msg = (() => {
+        const detail = (err as { response?: { data?: { detail?: unknown } } })
+          ?.response?.data?.detail;
+        return Array.isArray(detail)
+          ? detail
+              .map(
+                (e: { msg?: string }) =>
+                  e.msg?.replace(/^Value error,\s*/i, "") ?? "",
+              )
+              .join(" ")
+          : typeof detail === "string"
+            ? detail
+            : "Login failed. Please check your credentials.";
+      })();
       setError(msg);
     } finally {
       setLoading(false);

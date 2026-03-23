@@ -55,14 +55,22 @@ apiClient.interceptors.response.use(
     }
 
     // 422 — validation error from FastAPI
+    // Auth routes (register/login) handle validation errors inline — skip snackbar.
+    const requestUrl: string = error.config?.url ?? "";
+    const isAuthRoute =
+      requestUrl.includes("/auth/register") ||
+      requestUrl.includes("/auth/login");
+
     if (status === 422) {
-      const detail = error.response?.data?.detail;
-      const validationMsg = Array.isArray(detail)
-        ? detail.map((e: { msg: string }) => e.msg).join(", ")
-        : message;
-      store.dispatch(
-        showNotification({ message: validationMsg, severity: "warning" }),
-      );
+      if (!isAuthRoute) {
+        const detail = error.response?.data?.detail;
+        const validationMsg = Array.isArray(detail)
+          ? detail.map((e: { msg: string }) => e.msg).join(", ")
+          : message;
+        store.dispatch(
+          showNotification({ message: validationMsg, severity: "warning" }),
+        );
+      }
       return Promise.reject(error);
     }
 
@@ -89,7 +97,10 @@ apiClient.interceptors.response.use(
     }
 
     // All other errors — show the message from the server
-    store.dispatch(showNotification({ message, severity: "error" }));
+    // Auth routes handle their own errors inline — skip snackbar.
+    if (!isAuthRoute) {
+      store.dispatch(showNotification({ message, severity: "error" }));
+    }
     return Promise.reject(error);
   },
 );
