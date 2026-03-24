@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Box,
   FormControl,
@@ -6,6 +7,8 @@ import {
   MenuItem,
   Button,
   Menu,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   KeyboardArrowDown,
@@ -13,6 +16,9 @@ import {
   DashboardCustomize,
   MenuBook,
   DirectionsRun,
+  MoreVert,
+  Edit,
+  Delete,
 } from "@mui/icons-material";
 import { Project } from "@/services/api/projects";
 import { Sprint } from "@/services/api/sprints";
@@ -32,6 +38,10 @@ interface ProjectsToolbarProps {
   onAddProject: () => void;
   onAddSprint: () => void;
   onAddUserStory: () => void;
+  onEditProject: () => void;
+  onDeleteProject: () => void;
+  onEditSprint: () => void;
+  onDeleteSprint: () => void;
 }
 
 export default function ProjectsToolbar({
@@ -48,12 +58,24 @@ export default function ProjectsToolbar({
   onAddProject,
   onAddSprint,
   onAddUserStory,
+  onEditProject,
+  onDeleteProject,
+  onEditSprint,
+  onDeleteSprint,
 }: ProjectsToolbarProps) {
   const { can } = usePermissions();
-  const canAddProject = can("project:write");
-  const canAddSprint = can("sprint:write");
+  const canWriteProject = can("project:write");
+  const canWriteSprint = can("sprint:write");
+  const canAddProject = canWriteProject;
+  const canAddSprint = canWriteSprint;
   const canAddStory = can("story:write");
   const showNewWorkItem = canAddProject || canAddSprint || canAddStory;
+
+  const [projectMenuAnchor, setProjectMenuAnchor] =
+    useState<null | HTMLElement>(null);
+  const [sprintMenuAnchor, setSprintMenuAnchor] = useState<null | HTMLElement>(
+    null,
+  );
 
   const selectSx = {
     fontSize: "14px",
@@ -90,79 +112,177 @@ export default function ProjectsToolbar({
             width: { xs: "100%", md: "auto" },
           }}
         >
-          <FormControl
-            size="small"
-            sx={{ minWidth: { xs: "100%", sm: 160 }, maxWidth: { sm: 260 } }}
-          >
-            <InputLabel sx={{ fontSize: "13px" }} id="project-select-label">
-              Project
-            </InputLabel>
-            <Select
-              labelId="project-select-label"
-              label="Project"
-              value={selectedProjectId}
-              onChange={(e) => onProjectChange(e.target.value)}
-              disabled={loadingProjects || projects.length === 0}
-              IconComponent={KeyboardArrowDown}
-              sx={selectSx}
+          {/* Project selector + action menu */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <FormControl
+              size="small"
+              sx={{ minWidth: { xs: "100%", sm: 160 }, maxWidth: { sm: 260 } }}
             >
-              {loadingProjects ? (
-                <MenuItem disabled>
-                  <em>Loading projects…</em>
-                </MenuItem>
-              ) : projects.length === 0 ? (
-                <MenuItem disabled>
-                  <em>No projects</em>
-                </MenuItem>
-              ) : (
-                projects.map((p) => (
-                  <MenuItem key={p.id} value={p.id} sx={{ fontSize: "13px" }}>
-                    {p.name}
+              <InputLabel sx={{ fontSize: "13px" }} id="project-select-label">
+                Project
+              </InputLabel>
+              <Select
+                labelId="project-select-label"
+                label="Project"
+                value={selectedProjectId}
+                onChange={(e) => onProjectChange(e.target.value)}
+                disabled={loadingProjects || projects.length === 0}
+                IconComponent={KeyboardArrowDown}
+                sx={selectSx}
+              >
+                {loadingProjects ? (
+                  <MenuItem disabled>
+                    <em>Loading projects…</em>
                   </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-
-          <FormControl
-            size="small"
-            sx={{ minWidth: { xs: "100%", sm: 180 }, maxWidth: { sm: 280 } }}
-          >
-            <InputLabel sx={{ fontSize: "13px" }} id="sprint-select-label">
-              Sprint
-            </InputLabel>
-            <Select
-              labelId="sprint-select-label"
-              label="Sprint"
-              value={selectedSprintId}
-              onChange={(e) => onSprintChange(e.target.value)}
-              disabled={
-                loadingSprints || !selectedProjectId || sprints.length === 0
-              }
-              IconComponent={KeyboardArrowDown}
-              sx={selectSx}
-            >
-              {loadingSprints ? (
-                <MenuItem disabled>
-                  <em>Loading sprints…</em>
-                </MenuItem>
-              ) : sprints.length === 0 ? (
-                <MenuItem disabled>
-                  <em>No sprints</em>
-                </MenuItem>
-              ) : (
-                sprints.map((sprint) => (
-                  <MenuItem
-                    key={sprint.id}
-                    value={sprint.id}
-                    sx={{ fontSize: "13px" }}
+                ) : projects.length === 0 ? (
+                  <MenuItem disabled>
+                    <em>No projects</em>
+                  </MenuItem>
+                ) : (
+                  projects.map((p) => (
+                    <MenuItem key={p.id} value={p.id} sx={{ fontSize: "13px" }}>
+                      {p.name}
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+            {canWriteProject && selectedProjectId && (
+              <>
+                <Tooltip title="Project actions">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => setProjectMenuAnchor(e.currentTarget)}
                   >
-                    {sprint.name}
+                    <MoreVert fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  anchorEl={projectMenuAnchor}
+                  open={Boolean(projectMenuAnchor)}
+                  onClose={() => setProjectMenuAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                  transformOrigin={{ vertical: "top", horizontal: "left" }}
+                  PaperProps={{
+                    sx: {
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      minWidth: 160,
+                    },
+                  }}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      setProjectMenuAnchor(null);
+                      onEditProject();
+                    }}
+                    sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                  >
+                    <Edit sx={{ fontSize: 16, color: "#0078D4" }} />
+                    Edit Project
                   </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
+                  <MenuItem
+                    onClick={() => {
+                      setProjectMenuAnchor(null);
+                      onDeleteProject();
+                    }}
+                    sx={{ fontSize: "13px", py: 1, gap: 1.5, color: "#D13438" }}
+                  >
+                    <Delete sx={{ fontSize: 16, color: "#D13438" }} />
+                    Delete Project
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+          </Box>
+
+          {/* Sprint selector + action menu */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <FormControl
+              size="small"
+              sx={{ minWidth: { xs: "100%", sm: 180 }, maxWidth: { sm: 280 } }}
+            >
+              <InputLabel sx={{ fontSize: "13px" }} id="sprint-select-label">
+                Sprint
+              </InputLabel>
+              <Select
+                labelId="sprint-select-label"
+                label="Sprint"
+                value={selectedSprintId}
+                onChange={(e) => onSprintChange(e.target.value)}
+                disabled={
+                  loadingSprints || !selectedProjectId || sprints.length === 0
+                }
+                IconComponent={KeyboardArrowDown}
+                sx={selectSx}
+              >
+                {loadingSprints ? (
+                  <MenuItem disabled>
+                    <em>Loading sprints…</em>
+                  </MenuItem>
+                ) : sprints.length === 0 ? (
+                  <MenuItem disabled>
+                    <em>No sprints</em>
+                  </MenuItem>
+                ) : (
+                  sprints.map((sprint) => (
+                    <MenuItem
+                      key={sprint.id}
+                      value={sprint.id}
+                      sx={{ fontSize: "13px" }}
+                    >
+                      {sprint.name}
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+            {canWriteSprint && selectedSprintId && (
+              <>
+                <Tooltip title="Sprint actions">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => setSprintMenuAnchor(e.currentTarget)}
+                  >
+                    <MoreVert fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  anchorEl={sprintMenuAnchor}
+                  open={Boolean(sprintMenuAnchor)}
+                  onClose={() => setSprintMenuAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                  transformOrigin={{ vertical: "top", horizontal: "left" }}
+                  PaperProps={{
+                    sx: {
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      minWidth: 160,
+                    },
+                  }}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      setSprintMenuAnchor(null);
+                      onEditSprint();
+                    }}
+                    sx={{ fontSize: "13px", py: 1, gap: 1.5 }}
+                  >
+                    <Edit sx={{ fontSize: 16, color: "#0078D4" }} />
+                    Edit Sprint
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setSprintMenuAnchor(null);
+                      onDeleteSprint();
+                    }}
+                    sx={{ fontSize: "13px", py: 1, gap: 1.5, color: "#D13438" }}
+                  >
+                    <Delete sx={{ fontSize: 16, color: "#D13438" }} />
+                    Delete Sprint
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+          </Box>
         </Box>
 
         {/* New Work Item — wraps to next line at xs/sm (left-aligned), inline right at md+ */}

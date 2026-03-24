@@ -43,10 +43,23 @@ interface ProjectsDialogsProps {
   onCloseDeleteStory: () => void;
   onConfirmDeleteStory: () => void;
 
-  // Add project dialog
+  // Add / edit project dialog
   addProjectDialogOpen: boolean;
+  editingProject: Project | null;
   onCloseAddProject: () => void;
   onProjectCreated: () => void;
+
+  // Delete project dialog
+  deleteProjectConfirmOpen: boolean;
+  selectedProject: Project | undefined;
+  onCloseDeleteProject: () => void;
+  onConfirmDeleteProject: () => void;
+
+  // Delete sprint dialog
+  deleteSprintConfirmOpen: boolean;
+  selectedSprint: Sprint | undefined;
+  onCloseDeleteSprint: () => void;
+  onConfirmDeleteSprint: () => void;
 }
 
 export default function ProjectsDialogs({
@@ -73,8 +86,17 @@ export default function ProjectsDialogs({
   onCloseDeleteStory,
   onConfirmDeleteStory,
   addProjectDialogOpen,
+  editingProject,
   onCloseAddProject,
   onProjectCreated,
+  deleteProjectConfirmOpen,
+  selectedProject,
+  onCloseDeleteProject,
+  onConfirmDeleteProject,
+  deleteSprintConfirmOpen,
+  selectedSprint,
+  onCloseDeleteSprint,
+  onConfirmDeleteSprint,
 }: ProjectsDialogsProps) {
   const { can } = usePermissions();
   return (
@@ -118,6 +140,23 @@ export default function ProjectsDialogs({
         open={addProjectDialogOpen}
         onClose={onCloseAddProject}
         onCreated={onProjectCreated}
+        editProject={editingProject}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteProjectConfirmOpen}
+        onClose={onCloseDeleteProject}
+        onConfirm={onConfirmDeleteProject}
+        itemType="Project"
+        itemName={selectedProject?.name}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteSprintConfirmOpen}
+        onClose={onCloseDeleteSprint}
+        onConfirm={onConfirmDeleteSprint}
+        itemType="Sprint"
+        itemName={selectedSprint?.name}
       />
     </>
   );

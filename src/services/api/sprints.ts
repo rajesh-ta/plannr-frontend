@@ -18,6 +18,13 @@ export interface SprintCreatePayload {
   status: string;
 }
 
+export interface SprintUpdatePayload {
+  name?: string;
+  start_date?: string;
+  end_date?: string;
+  status?: string;
+}
+
 export const sprintsApi = {
   getByProjectId: async (projectId: string) => {
     const response = await apiClient.get<Sprint[]>(
@@ -29,5 +36,14 @@ export const sprintsApi = {
   create: async (payload: SprintCreatePayload) => {
     const response = await apiClient.post<Sprint>(`/sprints/`, payload);
     return response.data;
+  },
+
+  update: async (id: string, payload: SprintUpdatePayload): Promise<Sprint> => {
+    const response = await apiClient.put<Sprint>(`/sprints/${id}`, payload);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await apiClient.delete(`/sprints/${id}`);
   },
 };

@@ -14,20 +14,27 @@ import {
   useTheme,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
-import { projectsApi, ProjectCreatePayload } from "@/services/api/projects";
+import {
+  projectsApi,
+  ProjectCreatePayload,
+  Project,
+} from "@/services/api/projects";
 import { useAuth } from "@/hooks/useAuth";
 
 interface AddProjectDialogProps {
   open: boolean;
   onClose: () => void;
   onCreated?: () => void;
+  editProject?: Project | null;
 }
 
 export default function AddProjectDialog({
   open,
   onClose,
   onCreated,
+  editProject,
 }: AddProjectDialogProps) {
+  const isEdit = !!editProject;
   const { user } = useAuth();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -38,12 +45,17 @@ export default function AddProjectDialog({
 
   useEffect(() => {
     if (open) {
-      setName("");
-      setDescription("");
+      if (editProject) {
+        setName(editProject.name);
+        setDescription(editProject.description ?? "");
+      } else {
+        setName("");
+        setDescription("");
+      }
       setErrors({ name: false, description: false });
       setSaving(false);
     }
-  }, [open]);
+  }, [open, editProject]);
 
   const handleSave = async () => {
     const newErrors = {
@@ -57,15 +69,22 @@ export default function AddProjectDialog({
 
     setSaving(true);
     try {
-      const payload: ProjectCreatePayload = {
-        name: name.trim(),
-        description: description.trim(),
-      };
-      await projectsApi.create(payload);
+      if (isEdit && editProject) {
+        await projectsApi.update(editProject.id, {
+          name: name.trim(),
+          description: description.trim(),
+        });
+      } else {
+        const payload: ProjectCreatePayload = {
+          name: name.trim(),
+          description: description.trim(),
+        };
+        await projectsApi.create(payload);
+      }
       onCreated?.();
       onClose();
     } catch (err) {
-      console.error("Failed to create project:", err);
+      console.error("Failed to save project:", err);
     } finally {
       setSaving(false);
     }
@@ -94,7 +113,7 @@ export default function AddProjectDialog({
           component="div"
           sx={{ fontWeight: 400, color: "#323130" }}
         >
-          Add Project
+          {isEdit ? "Edit Project" : "Add Project"}
         </Typography>
         <IconButton onClick={onClose} size="small">
           <Close />
@@ -155,7 +174,13 @@ export default function AddProjectDialog({
             "&:hover": { bgcolor: "#106EBE" },
           }}
         >
-          {saving ? "Creating…" : "Create Project"}
+          {saving
+            ? isEdit
+              ? "Saving…"
+              : "Creating…"
+            : isEdit
+              ? "Save Changes"
+              : "Create Project"}
         </Button>
       </DialogActions>
     </Dialog>

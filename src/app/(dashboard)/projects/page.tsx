@@ -24,6 +24,7 @@ export default function ProjectsPage() {
         setNewWorkItemAnchor={d.setNewWorkItemAnchor}
         onAddProject={() => {
           d.setNewWorkItemAnchor(null);
+          d.setEditingProject(null);
           d.setAddProjectDialogOpen(true);
         }}
         onAddSprint={() => {
@@ -35,6 +36,10 @@ export default function ProjectsPage() {
           d.setNewWorkItemAnchor(null);
           d.setUserStoryDialogOpen(true);
         }}
+        onEditProject={d.handleEditProject}
+        onDeleteProject={d.handleDeleteProjectRequest}
+        onEditSprint={d.handleEditSprint}
+        onDeleteSprint={d.handleDeleteSprintRequest}
       />
 
       <BoardBody
@@ -89,8 +94,20 @@ export default function ProjectsPage() {
         onCloseDeleteStory={() => d.setDeleteStoryConfirmOpen(false)}
         onConfirmDeleteStory={d.handleDeleteStory}
         addProjectDialogOpen={d.addProjectDialogOpen}
-        onCloseAddProject={() => d.setAddProjectDialogOpen(false)}
+        editingProject={d.editingProject}
+        onCloseAddProject={() => {
+          d.setAddProjectDialogOpen(false);
+          d.setEditingProject(null);
+        }}
         onProjectCreated={d.handleProjectCreated}
+        deleteProjectConfirmOpen={d.deleteProjectConfirmOpen}
+        selectedProject={d.projects.find((p) => p.id === d.selectedProjectId)}
+        onCloseDeleteProject={() => d.setDeleteProjectConfirmOpen(false)}
+        onConfirmDeleteProject={d.handleDeleteProject}
+        deleteSprintConfirmOpen={d.deleteSprintConfirmOpen}
+        selectedSprint={d.sprints.find((s) => s.id === d.selectedSprintId)}
+        onCloseDeleteSprint={() => d.setDeleteSprintConfirmOpen(false)}
+        onConfirmDeleteSprint={d.handleDeleteSprint}
       />
     </Box>
   );

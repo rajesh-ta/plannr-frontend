@@ -24,9 +24,11 @@ export function useProjectsData() {
     setSelectedSprintId,
   } = useProject();
 
-  //  Server state via React Query 
+  //  Server state via React Query
 
-  const { data: projects = [], isLoading: loadingProjects } = useQuery<Project[]>({
+  const { data: projects = [], isLoading: loadingProjects } = useQuery<
+    Project[]
+  >({
     queryKey: ["projects"],
     queryFn: projectsApi.getAll,
   });
@@ -37,7 +39,9 @@ export function useProjectsData() {
     enabled: !!selectedProjectId,
   });
 
-  const { data: userStories = [], isLoading: loadingUserStories } = useQuery<UserStory[]>({
+  const { data: userStories = [], isLoading: loadingUserStories } = useQuery<
+    UserStory[]
+  >({
     queryKey: ["userStories", selectedSprintId],
     queryFn: () => userStoriesApi.getBySprintId(selectedSprintId),
     enabled: !!selectedSprintId,
@@ -58,44 +62,59 @@ export function useProjectsData() {
     loadingTasks[story.id] = storyTaskQueries[i]?.isLoading ?? false;
   });
 
-  //  Local UI state 
+  //  Local UI state
 
-  const [expandedStories, setExpandedStories] = useState<Record<string, boolean>>({});
+  const [expandedStories, setExpandedStories] = useState<
+    Record<string, boolean>
+  >({});
   const [allCollapsed, setAllCollapsed] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [addingTaskForStory, setAddingTaskForStory] = useState<string | null>(null);
-  const [newWorkItemAnchor, setNewWorkItemAnchor] = useState<null | HTMLElement>(null);
+  const [addingTaskForStory, setAddingTaskForStory] = useState<string | null>(
+    null,
+  );
+  const [newWorkItemAnchor, setNewWorkItemAnchor] =
+    useState<null | HTMLElement>(null);
   const [userStoryDialogOpen, setUserStoryDialogOpen] = useState(false);
-  const [editingUserStory, setEditingUserStory] = useState<UserStory | null>(null);
+  const [editingUserStory, setEditingUserStory] = useState<UserStory | null>(
+    null,
+  );
   const [sprintDialogOpen, setSprintDialogOpen] = useState(false);
   const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
   const [addProjectDialogOpen, setAddProjectDialogOpen] = useState(false);
-  const [storyMenuAnchor, setStoryMenuAnchor] = useState<null | HTMLElement>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [storyMenuAnchor, setStoryMenuAnchor] = useState<null | HTMLElement>(
+    null,
+  );
   const [storyMenuId, setStoryMenuId] = useState<string | null>(null);
   const [deleteStoryConfirmOpen, setDeleteStoryConfirmOpen] = useState(false);
-  const [pendingDeleteStoryId, setPendingDeleteStoryId] = useState<string | null>(null);
+  const [pendingDeleteStoryId, setPendingDeleteStoryId] = useState<
+    string | null
+  >(null);
+  const [deleteProjectConfirmOpen, setDeleteProjectConfirmOpen] =
+    useState(false);
+  const [deleteSprintConfirmOpen, setDeleteSprintConfirmOpen] = useState(false);
 
   const { data: users = [] } = useUsers();
 
   // Holds a sprint ID to select after sprints refetch (cross-project sprint creation)
   const pendingSprintIdRef = useRef<string | null>(null);
 
-  //  Auto-select first project on initial load 
+  //  Auto-select first project on initial load
   useEffect(() => {
     if (!loadingProjects && !selectedProjectId && projects.length > 0) {
       setSelectedProjectId(projects[0].id);
     }
   }, [projects, loadingProjects, selectedProjectId, setSelectedProjectId]);
 
-  //  Reset sprint selection when project changes 
+  //  Reset sprint selection when project changes
   useEffect(() => {
     setSelectedSprintId("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProjectId]);
 
-  //  Auto-select sprint once loaded and none is selected 
+  //  Auto-select sprint once loaded and none is selected
   useEffect(() => {
     if (loadingSprints || !selectedProjectId || selectedSprintId) return;
     if (sprints.length === 0) {
@@ -110,20 +129,28 @@ export function useProjectsData() {
     } else {
       setSelectedSprintId(sprints[0].id);
     }
-  }, [sprints, loadingSprints, selectedProjectId, selectedSprintId, setSelectedSprintId]);
+  }, [
+    sprints,
+    loadingSprints,
+    selectedProjectId,
+    selectedSprintId,
+    setSelectedSprintId,
+  ]);
 
-  //  Reset board expand state when sprint changes 
+  //  Reset board expand state when sprint changes
   useEffect(() => {
     setExpandedStories({});
     setAllCollapsed(false);
   }, [selectedSprintId]);
 
-  //  Board handlers 
+  //  Board handlers
 
   const handleCollapseAll = () => {
     if (allCollapsed) {
       const expanded: Record<string, boolean> = {};
-      userStories.forEach((s) => { expanded[s.id] = true; });
+      userStories.forEach((s) => {
+        expanded[s.id] = true;
+      });
       setExpandedStories(expanded);
     } else {
       setExpandedStories({});
@@ -136,7 +163,7 @@ export function useProjectsData() {
     setExpandedStories((prev) => ({ ...prev, [storyId]: !prev[storyId] }));
   };
 
-  //  Task handlers 
+  //  Task handlers
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task);
@@ -144,7 +171,8 @@ export function useProjectsData() {
   };
 
   const getSelectedUserStory = () => {
-    if (addingTaskForStory) return userStories.find((s) => s.id === addingTaskForStory);
+    if (addingTaskForStory)
+      return userStories.find((s) => s.id === addingTaskForStory);
     if (!selectedTask) return null;
     return userStories.find((s) => s.id === selectedTask.user_story_id);
   };
@@ -174,7 +202,9 @@ export function useProjectsData() {
           start_date: taskData.start_date ?? null,
           end_date: taskData.end_date ?? null,
         });
-        queryClient.invalidateQueries({ queryKey: ["tasks", "story", addingTaskForStory] });
+        queryClient.invalidateQueries({
+          queryKey: ["tasks", "story", addingTaskForStory],
+        });
         queryClient.invalidateQueries({ queryKey: ["tasks"] });
       } else if (selectedTask) {
         await tasksApi.update(selectedTask.id, {
@@ -187,7 +217,9 @@ export function useProjectsData() {
           start_date: taskData.start_date ?? null,
           end_date: taskData.end_date ?? null,
         });
-        queryClient.invalidateQueries({ queryKey: ["tasks", "story", selectedTask.user_story_id] });
+        queryClient.invalidateQueries({
+          queryKey: ["tasks", "story", selectedTask.user_story_id],
+        });
         queryClient.invalidateQueries({ queryKey: ["tasks"] });
       }
     } catch (error) {
@@ -199,7 +231,11 @@ export function useProjectsData() {
     try {
       let userStoryId = "";
       for (const story of userStories) {
-        const cached = queryClient.getQueryData<Task[]>(["tasks", "story", story.id]);
+        const cached = queryClient.getQueryData<Task[]>([
+          "tasks",
+          "story",
+          story.id,
+        ]);
         if (cached?.some((t) => t.id === taskId)) {
           userStoryId = story.id;
           break;
@@ -207,25 +243,35 @@ export function useProjectsData() {
       }
       if (!userStoryId) return;
       await tasksApi.delete(taskId);
-      queryClient.invalidateQueries({ queryKey: ["tasks", "story", userStoryId] });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "story", userStoryId],
+      });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       console.error("Failed to delete task:", error);
     }
   };
 
-  //  User story handlers 
+  //  User story handlers
 
-  const handleSaveUserStory = async (payload: UserStoryCreatePayload, id?: string) => {
+  const handleSaveUserStory = async (
+    payload: UserStoryCreatePayload,
+    id?: string,
+  ) => {
     if (id) {
       await userStoriesApi.update(id, payload);
     } else {
       await userStoriesApi.create(payload);
     }
-    queryClient.invalidateQueries({ queryKey: ["userStories", selectedSprintId] });
+    queryClient.invalidateQueries({
+      queryKey: ["userStories", selectedSprintId],
+    });
   };
 
-  const handleStoryMenuOpen = (e: React.MouseEvent<HTMLElement>, storyId: string) => {
+  const handleStoryMenuOpen = (
+    e: React.MouseEvent<HTMLElement>,
+    storyId: string,
+  ) => {
     e.stopPropagation();
     setStoryMenuAnchor(e.currentTarget);
     setStoryMenuId(storyId);
@@ -257,33 +303,106 @@ export function useProjectsData() {
     setPendingDeleteStoryId(null);
     try {
       await userStoriesApi.delete(idToDelete);
-      queryClient.invalidateQueries({ queryKey: ["userStories", selectedSprintId] });
+      queryClient.invalidateQueries({
+        queryKey: ["userStories", selectedSprintId],
+      });
       queryClient.removeQueries({ queryKey: ["tasks", "story", idToDelete] });
     } catch (error) {
       console.error("Failed to delete user story:", error);
     }
   };
 
-  //  Sprint handler 
+  //  Sprint handler
 
-  const handleSaveSprint = async (payload: SprintCreatePayload) => {
-    const created = await sprintsApi.create(payload);
-    if (payload.project_id !== selectedProjectId) {
-      pendingSprintIdRef.current = created.id;
-      setSelectedProjectId(payload.project_id);
+  const handleSaveSprint = async (
+    payload: SprintCreatePayload,
+    id?: string,
+  ) => {
+    if (id) {
+      // Edit existing sprint
+      await sprintsApi.update(id, {
+        name: payload.name,
+        status: payload.status,
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["sprints", selectedProjectId],
+      });
     } else {
-      await queryClient.invalidateQueries({ queryKey: ["sprints", selectedProjectId] });
-      setSelectedSprintId(created.id);
+      // Create new sprint
+      const created = await sprintsApi.create(payload);
+      if (payload.project_id !== selectedProjectId) {
+        pendingSprintIdRef.current = created.id;
+        setSelectedProjectId(payload.project_id);
+      } else {
+        await queryClient.invalidateQueries({
+          queryKey: ["sprints", selectedProjectId],
+        });
+        setSelectedSprintId(created.id);
+      }
     }
   };
 
-  //  Project handler 
+  const handleEditSprint = () => {
+    const sprint = sprints.find((s) => s.id === selectedSprintId);
+    if (sprint) {
+      setEditingSprint(sprint);
+      setSprintDialogOpen(true);
+    }
+  };
+
+  const handleDeleteSprintRequest = () => {
+    setDeleteSprintConfirmOpen(true);
+  };
+
+  const handleDeleteSprint = async () => {
+    if (!selectedSprintId) return;
+    const idToDelete = selectedSprintId;
+    try {
+      await sprintsApi.delete(idToDelete);
+      queryClient.removeQueries({ queryKey: ["userStories", idToDelete] });
+      await queryClient.invalidateQueries({
+        queryKey: ["sprints", selectedProjectId],
+      });
+      setSelectedSprintId("");
+    } catch (error) {
+      console.error("Failed to delete sprint:", error);
+    }
+  };
+
+  //  Project handler
 
   const handleProjectCreated = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ["projects"] });
     const fresh = queryClient.getQueryData<Project[]>(["projects"]);
     if (fresh && fresh.length > 0) setSelectedProjectId(fresh[0].id);
   }, [queryClient, setSelectedProjectId]);
+
+  const handleEditProject = () => {
+    const project = projects.find((p) => p.id === selectedProjectId);
+    if (project) {
+      setEditingProject(project);
+      setAddProjectDialogOpen(true);
+    }
+  };
+
+  const handleDeleteProjectRequest = () => {
+    setDeleteProjectConfirmOpen(true);
+  };
+
+  const handleDeleteProject = async () => {
+    if (!selectedProjectId) return;
+    const idToDelete = selectedProjectId;
+    try {
+      await projectsApi.delete(idToDelete);
+      setSelectedProjectId("");
+      setSelectedSprintId("");
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+    }
+  };
 
   return {
     selectedProjectId,
@@ -316,11 +435,17 @@ export function useProjectsData() {
     setEditingSprint,
     addProjectDialogOpen,
     setAddProjectDialogOpen,
+    editingProject,
+    setEditingProject,
     storyMenuAnchor,
     storyMenuId,
     deleteStoryConfirmOpen,
     setDeleteStoryConfirmOpen,
     pendingDeleteStoryId,
+    deleteProjectConfirmOpen,
+    setDeleteProjectConfirmOpen,
+    deleteSprintConfirmOpen,
+    setDeleteSprintConfirmOpen,
     handleCollapseAll,
     toggleStory,
     handleTaskClick,
@@ -331,11 +456,17 @@ export function useProjectsData() {
     handleDeleteTask,
     handleSaveUserStory,
     handleSaveSprint,
+    handleEditSprint,
+    handleDeleteSprintRequest,
+    handleDeleteSprint,
     handleStoryMenuOpen,
     handleStoryMenuClose,
     handleEditStory,
     handleDeleteStoryRequest,
     handleDeleteStory,
     handleProjectCreated,
+    handleEditProject,
+    handleDeleteProjectRequest,
+    handleDeleteProject,
   };
 }
