@@ -51,10 +51,10 @@ export function useAdminData(enabled: boolean) {
   }, [users]);
 
   // Invalidate both queries to force a fresh fetch (used by UsersDataGrid onRefresh)
-  const fetchData = useCallback(() => {
+  const fetchData = useCallback(async () => {
     setError(null);
-    queryClient.invalidateQueries({ queryKey: ["users"] });
-    queryClient.invalidateQueries({ queryKey: ["roles"] });
+    await queryClient.invalidateQueries({ queryKey: ["users"] });
+    await queryClient.invalidateQueries({ queryKey: ["roles"] });
   }, [queryClient]);
 
   return { users, roles, modifierNames, loading, error, setError, fetchData };

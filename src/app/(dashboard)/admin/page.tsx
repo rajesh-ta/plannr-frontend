@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Box, CircularProgress, Alert } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminStats from "@/components/admin/AdminStats";
 import UsersDataGrid from "@/components/admin/UsersDataGrid";
@@ -17,7 +17,7 @@ export default function AdminPage() {
 
   const hasAccess = !authLoading && can("admin:read");
 
-  const { users, roles, modifierNames, loading, error, setError, fetchData } =
+  const { users, roles, modifierNames, loading, setError, fetchData } =
     useAdminData(hasAccess);
 
   useEffect(() => {
@@ -52,12 +52,6 @@ export default function AdminPage() {
       }}
     >
       <AdminHeader />
-
-      {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
 
       <AdminStats users={users} />
 
