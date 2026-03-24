@@ -54,6 +54,10 @@ const baseProps = {
   onAddProject: jest.fn(),
   onAddSprint: jest.fn(),
   onAddUserStory: jest.fn(),
+  onEditProject: jest.fn(),
+  onDeleteProject: jest.fn(),
+  onEditSprint: jest.fn(),
+  onDeleteSprint: jest.fn(),
 };
 
 // No permissions by default
@@ -321,5 +325,138 @@ describe("ProjectsToolbar — New Work Item menu callbacks", () => {
     // Press Escape to close the MUI Menu
     await user.keyboard("{Escape}");
     expect(baseProps.setNewWorkItemAnchor).toHaveBeenCalledWith(null);
+  });
+});
+
+// ── Project actions menu ───────────────────────────────────────────────────────
+//
+// The MoreVert icon button next to the Project selector is shown only when
+// canWriteProject (project:write) AND a project is selected.
+//
+// Finding the button: MUI SvgIcon exposes data-testid="<Name>Icon" in
+// non-production environments.  "<MoreVert />" → data-testid="MoreVertIcon".
+// Using that testId is immune to orphaned <button> elements that earlier tests
+// leave in document.body via document.body.appendChild(anchor).
+//
+describe("ProjectsToolbar — project actions menu", () => {
+  function renderWithProjectWrite(
+    overrides: Partial<React.ComponentProps<typeof ProjectsToolbar>> = {},
+  ) {
+    mockedUsePermissions.mockReturnValue({
+      can: (p: string) => p === "project:write",
+    });
+    return renderWithProviders(
+      <ProjectsToolbar {...baseProps} {...overrides} />,
+    );
+  }
+
+  // Returns the IconButton that wraps the first MoreVertIcon in the render.
+  // When only project:write is granted (no sprint:write), this is always the
+  // project-actions button.
+  function getProjectActionsBtn(): HTMLElement {
+    return screen
+      .getAllByTestId("MoreVertIcon")[0]
+      .closest("button") as HTMLElement;
+  }
+
+  // ── Visibility ──────────────────────────────────────────────────────────────
+
+  it("does not render the project actions button when user lacks project:write", () => {
+    mockedUsePermissions.mockReturnValue({ can: () => false });
+    renderWithProviders(<ProjectsToolbar {...baseProps} />);
+    expect(screen.queryByTestId("MoreVertIcon")).not.toBeInTheDocument();
+  });
+
+  it("does not render the project actions button when no project is selected", () => {
+    renderWithProjectWrite({ selectedProjectId: "" });
+    expect(screen.queryByTestId("MoreVertIcon")).not.toBeInTheDocument();
+  });
+
+  it("renders the project actions icon button when user has project:write and a project is selected", () => {
+    renderWithProjectWrite();
+    expect(screen.getByTestId("MoreVertIcon")).toBeInTheDocument();
+  });
+
+  // ── Menu closed state ────────────────────────────────────────────────────────
+
+  it("does not show Edit Project or Delete Project before the button is clicked", () => {
+    renderWithProjectWrite();
+    expect(
+      screen.queryByRole("menuitem", { name: /edit project/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: /delete project/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  // ── Menu open state ──────────────────────────────────────────────────────────
+
+  it("opens the project actions menu showing Edit Project and Delete Project items", async () => {
+    const user = userEvent.setup();
+    renderWithProjectWrite();
+    await user.click(getProjectActionsBtn());
+    expect(
+      screen.getByRole("menuitem", { name: /edit project/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: /delete project/i }),
+    ).toBeInTheDocument();
+  });
+
+  // ── Edit Project ─────────────────────────────────────────────────────────────
+
+  it("calls onEditProject when Edit Project is clicked", async () => {
+    const user = userEvent.setup();
+    const onEditProject = jest.fn();
+    renderWithProjectWrite({ onEditProject });
+    await user.click(getProjectActionsBtn());
+    await user.click(screen.getByRole("menuitem", { name: /edit project/i }));
+    expect(onEditProject).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the menu after Edit Project is clicked", async () => {
+    const user = userEvent.setup();
+    renderWithProjectWrite();
+    await user.click(getProjectActionsBtn());
+    await user.click(screen.getByRole("menuitem", { name: /edit project/i }));
+    expect(
+      screen.queryByRole("menuitem", { name: /edit project/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  // ── Delete Project ───────────────────────────────────────────────────────────
+
+  it("calls onDeleteProject when Delete Project is clicked", async () => {
+    const user = userEvent.setup();
+    const onDeleteProject = jest.fn();
+    renderWithProjectWrite({ onDeleteProject });
+    await user.click(getProjectActionsBtn());
+    await user.click(screen.getByRole("menuitem", { name: /delete project/i }));
+    expect(onDeleteProject).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the menu after Delete Project is clicked", async () => {
+    const user = userEvent.setup();
+    renderWithProjectWrite();
+    await user.click(getProjectActionsBtn());
+    await user.click(screen.getByRole("menuitem", { name: /delete project/i }));
+    expect(
+      screen.queryByRole("menuitem", { name: /delete project/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  // ── Keyboard close ───────────────────────────────────────────────────────────
+
+  it("closes the menu when Escape is pressed", async () => {
+    const user = userEvent.setup();
+    renderWithProjectWrite();
+    await user.click(getProjectActionsBtn());
+    expect(
+      screen.getByRole("menuitem", { name: /edit project/i }),
+    ).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(
+      screen.queryByRole("menuitem", { name: /edit project/i }),
+    ).not.toBeInTheDocument();
   });
 });
