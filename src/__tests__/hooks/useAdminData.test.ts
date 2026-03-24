@@ -1,10 +1,26 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usersApi } from "@/services/api/users";
 import { rolesApi } from "@/services/api/roles";
 import { useAdminData } from "@/hooks/useAdminData";
 
 jest.mock("@/services/api/users");
 jest.mock("@/services/api/roles");
+
+function makeWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
+  }
+  return { Wrapper, queryClient };
+}
 
 const mockedUsersApi = usersApi as jest.Mocked<typeof usersApi>;
 const mockedRolesApi = rolesApi as jest.Mocked<typeof rolesApi>;
@@ -56,12 +72,16 @@ beforeEach(() => {
 
 describe("useAdminData", () => {
   it("does not fetch when enabled=false", () => {
-    renderHook(() => useAdminData(false));
+    const { Wrapper } = makeWrapper();
+    renderHook(() => useAdminData(false), { wrapper: Wrapper });
     expect(mockedUsersApi.getAll).not.toHaveBeenCalled();
   });
 
   it("fetches users and roles when enabled=true", async () => {
-    const { result } = renderHook(() => useAdminData(true));
+    const { Wrapper } = makeWrapper();
+    const { result } = renderHook(() => useAdminData(true), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.users).toEqual(USERS);
     expect(result.current.roles).toEqual(ROLES);
@@ -69,7 +89,10 @@ describe("useAdminData", () => {
   });
 
   it("builds modifierNames map from last_modified_by references", async () => {
-    const { result } = renderHook(() => useAdminData(true));
+    const { Wrapper } = makeWrapper();
+    const { result } = renderHook(() => useAdminData(true), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.loading).toBe(false));
     // u1's last_modified_by = "u2" → modifierNames[u1.id] = "Rajesh"
     expect(result.current.modifierNames["u1"]).toBe("Rajesh");
@@ -79,14 +102,20 @@ describe("useAdminData", () => {
 
   it("sets error message when API call fails", async () => {
     mockedUsersApi.getAll.mockRejectedValueOnce(new Error("Network error"));
-    const { result } = renderHook(() => useAdminData(true));
+    const { Wrapper } = makeWrapper();
+    const { result } = renderHook(() => useAdminData(true), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toBe("Failed to load data. Please try again.");
     expect(result.current.users).toEqual([]);
   });
 
   it("fetchData can be called manually to re-fetch", async () => {
-    const { result } = renderHook(() => useAdminData(true));
+    const { Wrapper } = makeWrapper();
+    const { result } = renderHook(() => useAdminData(true), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(mockedUsersApi.getAll).toHaveBeenCalledTimes(1);
 
@@ -97,7 +126,10 @@ describe("useAdminData", () => {
   });
 
   it("setError exposes error state externally", async () => {
-    const { result } = renderHook(() => useAdminData(true));
+    const { Wrapper } = makeWrapper();
+    const { result } = renderHook(() => useAdminData(true), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.loading).toBe(false));
     act(() => result.current.setError("Custom error"));
     expect(result.current.error).toBe("Custom error");

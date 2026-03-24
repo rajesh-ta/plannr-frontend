@@ -297,15 +297,18 @@ describe("useProjectsData — toggleStory", () => {
     expect(mockedTasksApi.getByUserStoryId).toHaveBeenCalledTimes(callsBefore);
   });
 
-  it("fetches tasks when expanding a story whose tasks have not been loaded yet", async () => {
+  it("does not trigger additional task fetches when toggling a story not in userStories", async () => {
     const { result } = await renderAndSettle();
+    // "us2" is not in userStories; useQueries only pre-fetches for known stories
     expect(result.current.storyTasks["us2"]).toBeUndefined();
+    const callsBefore = mockedTasksApi.getByUserStoryId.mock.calls.length;
     await act(async () => {
       await result.current.toggleStory("us2");
     });
     expect(result.current.expandedStories["us2"]).toBe(true);
-    expect(mockedTasksApi.getByUserStoryId).toHaveBeenCalledWith("us2");
-    expect(result.current.storyTasks["us2"]).toEqual([TASK]);
+    // no extra fetch — useQueries drives task loading, not toggleStory
+    expect(mockedTasksApi.getByUserStoryId).toHaveBeenCalledTimes(callsBefore);
+    expect(result.current.storyTasks["us2"]).toBeUndefined();
   });
 });
 
@@ -370,6 +373,7 @@ describe("useProjectsData — handleSaveTask", () => {
     const { result } = await renderAndSettle();
     const createdTask: Task = { ...TASK, id: "t-new", title: "New Task" };
     mockedTasksApi.create.mockResolvedValueOnce(createdTask);
+    mockedTasksApi.getByUserStoryId.mockResolvedValue([TASK, createdTask]);
     act(() => result.current.handleAddTask("us1"));
     await act(async () => {
       await result.current.handleSaveTask({
@@ -381,13 +385,16 @@ describe("useProjectsData — handleSaveTask", () => {
     expect(mockedTasksApi.create).toHaveBeenCalledWith(
       expect.objectContaining({ user_story_id: "us1", title: "New Task" }),
     );
-    expect(result.current.storyTasks["us1"]).toContainEqual(createdTask);
+    await waitFor(() =>
+      expect(result.current.storyTasks["us1"]).toContainEqual(createdTask),
+    );
   });
 
   it("calls tasksApi.update and replaces the task in storyTasks when selectedTask is set", async () => {
     const { result } = await renderAndSettle();
     const updatedTask: Task = { ...TASK, title: "Updated Task" };
     mockedTasksApi.update.mockResolvedValueOnce(updatedTask);
+    mockedTasksApi.getByUserStoryId.mockResolvedValue([updatedTask]);
     act(() => result.current.handleTaskClick(TASK));
     await act(async () => {
       await result.current.handleSaveTask({ title: "Updated Task" });
@@ -396,10 +403,12 @@ describe("useProjectsData — handleSaveTask", () => {
       "t1",
       expect.objectContaining({ title: "Updated Task" }),
     );
-    expect(result.current.storyTasks["us1"]).toContainEqual(updatedTask);
-    expect(result.current.storyTasks["us1"]).not.toContainEqual(
-      expect.objectContaining({ title: "Task One" }),
-    );
+    await waitFor(() => {
+      expect(result.current.storyTasks["us1"]).toContainEqual(updatedTask);
+      expect(result.current.storyTasks["us1"]).not.toContainEqual(
+        expect.objectContaining({ title: "Task One" }),
+      );
+    });
   });
 
   it("does not call any API when neither addingTaskForStory nor selectedTask is set", async () => {
@@ -433,11 +442,12 @@ describe("useProjectsData — handleDeleteTask", () => {
   it("calls tasksApi.delete and removes the task from storyTasks", async () => {
     const { result } = await renderAndSettle();
     // storyTasks["us1"] = [TASK] after auto-load
+    mockedTasksApi.getByUserStoryId.mockResolvedValue([]);
     await act(async () => {
       await result.current.handleDeleteTask("t1");
     });
     expect(mockedTasksApi.delete).toHaveBeenCalledWith("t1");
-    expect(result.current.storyTasks["us1"]).toEqual([]);
+    await waitFor(() => expect(result.current.storyTasks["us1"]).toEqual([]));
   });
 
   it("does nothing when the task id is not found in any story's tasks", async () => {
@@ -474,11 +484,17 @@ describe("useProjectsData — handleSaveUserStory", () => {
       title: "New Story",
     };
     mockedUserStoriesApi.create.mockResolvedValueOnce(newStory);
+    mockedUserStoriesApi.getBySprintId.mockResolvedValueOnce([
+      USER_STORY,
+      newStory,
+    ]);
     await act(async () => {
       await result.current.handleSaveUserStory(STORY_PAYLOAD);
     });
     expect(mockedUserStoriesApi.create).toHaveBeenCalledWith(STORY_PAYLOAD);
-    expect(result.current.userStories).toContainEqual(newStory);
+    await waitFor(() =>
+      expect(result.current.userStories).toContainEqual(newStory),
+    );
   });
 
   it("does NOT append the story when its sprint_id differs from selectedSprintId", async () => {
@@ -503,6 +519,7 @@ describe("useProjectsData — handleSaveUserStory", () => {
     const { result } = await renderAndSettle();
     const updatedStory: UserStory = { ...USER_STORY, title: "Updated Story" };
     mockedUserStoriesApi.update.mockResolvedValueOnce(updatedStory);
+    mockedUserStoriesApi.getBySprintId.mockResolvedValueOnce([updatedStory]);
     await act(async () => {
       await result.current.handleSaveUserStory(STORY_PAYLOAD, "us1");
     });
@@ -510,8 +527,10 @@ describe("useProjectsData — handleSaveUserStory", () => {
       "us1",
       STORY_PAYLOAD,
     );
-    expect(result.current.userStories).toContainEqual(updatedStory);
-    expect(result.current.userStories).not.toContainEqual(USER_STORY);
+    await waitFor(() => {
+      expect(result.current.userStories).toContainEqual(updatedStory);
+      expect(result.current.userStories).not.toContainEqual(USER_STORY);
+    });
   });
 });
 
@@ -569,14 +588,17 @@ describe("useProjectsData — handleDeleteStory", () => {
   it("calls userStoriesApi.delete, removes the story from the list and clears its tasks", async () => {
     const { result } = await renderAndSettle();
     // Trigger the delete request flow via menu
+    mockedUserStoriesApi.getBySprintId.mockResolvedValueOnce([]);
     act(() => result.current.handleStoryMenuOpen(fakeMouse(), "us1"));
     act(() => result.current.handleDeleteStoryRequest());
     await act(async () => {
       await result.current.handleDeleteStory();
     });
     expect(mockedUserStoriesApi.delete).toHaveBeenCalledWith("us1");
-    expect(result.current.userStories).toEqual([]);
-    expect(result.current.storyTasks["us1"]).toBeUndefined();
+    await waitFor(() => {
+      expect(result.current.userStories).toEqual([]);
+      expect(result.current.storyTasks["us1"]).toBeUndefined();
+    });
   });
 
   it("does nothing when pendingDeleteStoryId is null", async () => {
@@ -616,6 +638,7 @@ describe("useProjectsData — handleSaveSprint", () => {
       created_at: "",
     };
     mockedSprintsApi.create.mockResolvedValueOnce(newSprint);
+    mockedSprintsApi.getByProjectId.mockResolvedValueOnce([SPRINT, newSprint]);
     await act(async () => {
       await result.current.handleSaveSprint({
         name: "Sprint 2",
@@ -626,8 +649,10 @@ describe("useProjectsData — handleSaveSprint", () => {
     expect(mockedSprintsApi.create).toHaveBeenCalledWith(
       expect.objectContaining({ name: "Sprint 2", project_id: "p1" }),
     );
-    expect(result.current.sprints).toContainEqual(newSprint);
-    expect(result.current.selectedSprintId).toBe("sp2");
+    await waitFor(() => {
+      expect(result.current.sprints).toContainEqual(newSprint);
+      expect(result.current.selectedSprintId).toBe("sp2");
+    });
   });
 
   it("switches selectedProjectId when the sprint belongs to a different project", async () => {
@@ -664,7 +689,7 @@ describe("useProjectsData — handleProjectCreated", () => {
       await result.current.handleProjectCreated();
     });
     expect(mockedProjectsApi.getAll).toHaveBeenCalledTimes(2);
-    expect(result.current.projects).toEqual(freshProjects);
+    await waitFor(() => expect(result.current.projects).toEqual(freshProjects));
   });
 
   it("selects the first project from the refreshed list", async () => {
